@@ -1,29 +1,87 @@
-# Browser Search Extensions
+# 🎬 Browser Search Extensions
 
-右键选中文字，快速在影视网站搜索。
+> 选中文字，右键一搜，影视信息触手可及。
 
-## 扩展列表
+一组轻量级 Chrome 浏览器扩展，让你在任意网页选中文本后，通过右键菜单快速跳转到影视网站搜索。无需切换标签、无需复制粘贴——选中即搜。
 
-### HDHive Search
+---
 
-在任意网页选中文字后右键，点击「在 HDHive 搜索」即可在新标签页打开 HDHive 搜索结果。
+## ✨ 扩展一览
 
-- 网站：https://hdhive.com
-- 搜索类型：聚合搜索（电影 + 剧集）
+### 🐝 HDHive Search
 
-### 豆瓣搜索
+| 项目 | 说明 |
+|------|------|
+| 目标网站 | [HDHive](https://hdhive.com) — 基于 TMDB 的影视资料聚合站 |
+| 搜索模式 | 聚合搜索（电影 + 剧集） |
+| 搜索 URL | `hdhive.com/search?query=关键词&type=multi&page=1` |
+| 版本 | 1.0.0 |
+| Manifest | V3 |
 
-在任意网页选中文字后右键，点击「在豆瓣搜索」即可在新标签页打开豆瓣搜索结果。
+**使用方式：** 在任意网页选中影视名称（如「星际穿越」），右键点击 **「在 HDHive 搜索"星际穿越"」**，即可在新标签页打开 HDHive 的搜索结果页面。网站需要已登录，搜索结果将自动携带登录态。
 
-- 网站：https://search.douban.com
+### 📖 豆瓣搜索
 
-## 安装方法
+| 项目 | 说明 |
+|------|------|
+| 目标网站 | [豆瓣](https://search.douban.com) — 影视/图书/音乐评分与评论 |
+| 搜索模式 | 影视搜索 |
+| 搜索 URL | `search.douban.com/movie/subject_search?search_text=关键词` |
+| 版本 | 1.0 |
+| Manifest | V3 |
 
-1. 下载对应扩展目录
-2. Chrome 打开 `chrome://extensions/`
-3. 开启「开发者模式」
-4. 点击「加载已解压的扩展程序」，选择扩展目录
+**使用方式：** 在任意网页选中影视名称，右键点击 **「在豆瓣搜索"关键词"」**，即可在新标签页打开豆瓣的影视搜索结果。
 
-## 许可证
+---
 
-MIT
+## 🚀 安装方法
+
+1. 将本仓库克隆到本地：
+   ```bash
+   git clone https://github.com/zaynzhu/person-browser-extensions.git
+   ```
+2. 打开 Chrome，地址栏输入 `chrome://extensions/`
+3. 开启右上角 **「开发者模式」**
+4. 点击 **「加载已解压的扩展程序」**
+5. 选择对应的扩展目录：
+   - HDHive → `person-browser-extensions/hdhive-search/`
+   - 豆瓣  → `person-browser-extensions/douban-search/`
+6. 安装完成，右键菜单即可使用
+
+> 💡 **提示：** 两个扩展互相独立，可以只安装其中一个，也可以同时安装。
+
+---
+
+## 📂 项目结构
+
+```
+person-browser-extensions/
+├── hdhive-search/            # HDHive 搜索扩展
+│   ├── manifest.json
+│   ├── background.js
+│   └── icons/
+│       ├── icon16.png
+│       ├── icon48.png
+│       └── icon128.png
+├── douban-search/            # 豆瓣搜索扩展
+│   ├── manifest.json
+│   ├── background.js
+│   └── icon.png
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🔧 技术细节
+
+- **Manifest V3** — 使用最新 Chrome 扩展标准，Service Worker 后台运行
+- **极简权限** — 仅申请 `contextMenus` 权限，不读取网页内容、不追踪用户行为
+- **零依赖** — 无需任何第三方库，代码总量不足 30 行
+- **新标签打开** — 搜索结果在独立标签页展示，不干扰当前浏览
+
+---
+
+## 📄 许可证
+
+MIT License
