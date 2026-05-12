@@ -32,6 +32,22 @@
 
 **使用方式：** 在任意网页选中影视名称，右键点击 **「在豆瓣搜索"关键词"」**，即可在新标签页打开豆瓣的影视搜索结果。
 
+### 🔍 XCili Search（无极磁力）
+
+| 项目 | 说明 |
+|------|------|
+| 目标网站 | [xcili.com](https://xcili.com) — 磁力链接搜索引擎 |
+| 搜索模式 | 番号搜索，过滤合集，展示最优结果 |
+| 搜索 URL | `xcili.com/search?q=番号` |
+| 版本 | 1.0.0 |
+| Manifest | V3 |
+
+**使用方式：** 两种方式——
+1. **右键搜索：** 在任意网页选中番号（如「SSIS-001」），右键点击 **「在无极磁力搜索"SSIS-001"」**
+2. **手动输入：** 点击扩展图标，在弹窗中输入番号搜索
+
+搜索结果展示在弹窗中：标题、大小、磁力链接（可一键复制）、发布日期、种子特征码。
+
 ---
 
 ## 🚀 安装方法
@@ -46,9 +62,10 @@
 5. 选择对应的扩展目录：
    - HDHive → `person-browser-extensions/hdhive-search/`
    - 豆瓣  → `person-browser-extensions/douban-search/`
+   - 无极磁力 → `person-browser-extensions/xcili-search/`
 6. 安装完成，右键菜单即可使用
 
-> 💡 **提示：** 两个扩展互相独立，可以只安装其中一个，也可以同时安装。
+> 💡 **提示：** 三个扩展互相独立，可以只安装其中一个，也可以同时安装。
 
 ---
 
@@ -67,6 +84,13 @@ person-browser-extensions/
 │   ├── manifest.json
 │   ├── background.js
 │   └── icon.png
+├── xcili-search/             # 无极磁力搜索扩展
+│   ├── manifest.json
+│   ├── background.js
+│   ├── popup.html
+│   ├── popup.js
+│   ├── popup.css
+│   └── icons/
 ├── .gitignore
 └── README.md
 ```
