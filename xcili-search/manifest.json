@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "XCili Search",
   "version": "1.0.0",
-  "description": "右键选中番号或手动输入，在无极磁力搜索磁力链接",
+  "description": "右键选中关键词或手动输入，在无极磁力搜索磁力链接",
   "permissions": ["contextMenus", "activeTab"],
   "background": {
     "service_worker": "background.js"
