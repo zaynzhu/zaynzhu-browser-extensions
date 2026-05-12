@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" id="codeInput" placeholder="输入番号，如 ABP-123" autofocus>
+      <button id="searchBtn">搜索</button>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+
+    <div id="result" class="result hidden">
+      <div class="result-header">
+        <span class="result-title" id="resultTitle"></span>
+        <span class="result-size" id="resultSize"></span>
+      </div>
+      <div class="result-meta">
+        <span id="resultDate"></span>
+        <span id="resultHash"></span>
+      </div>
+      <div class="magnet-box">
+        <input type="text" id="magnetInput" readonly>
+        <button id="copyBtn" title="复制磁力链接">复制</button>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
