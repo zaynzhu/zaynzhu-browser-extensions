@@ -42,8 +42,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function doSearch(code) {
   try {
     const searchUrl = `${XCILI_BASE}/search?q=${encodeURIComponent(code)}`
+    console.log('[xcili] 搜索:', searchUrl)
     const html = await fetchWithTimeout(searchUrl)
+    console.log('[xcili] 获取到 HTML, 长度:', html.length)
     const results = parseSearchResults(html)
+    console.log('[xcili] 解析到结果数:', results.length)
 
     if (results.length === 0) {
       return { status: 'not_found', code }
@@ -51,13 +54,16 @@ async function doSearch(code) {
 
     const filterResult = filterResults(results, code)
     const best = filterResult.best
+    console.log('[xcili] 最优结果:', best)
 
     if (!best) {
       return { status: 'not_found', code, excluded: filterResult.excluded.length }
     }
 
     // 获取详情页磁力链接
+    console.log('[xcili] 获取详情页:', best.detailUrl)
     const detail = await fetchMagnetDetail(best.detailUrl)
+    console.log('[xcili] 详情页结果:', detail)
 
     return {
       status: 'confirmed',
@@ -71,6 +77,7 @@ async function doSearch(code) {
       detailUrl: best.detailUrl,
     }
   } catch (error) {
+    console.error('[xcili] 搜索失败:', error)
     return { status: 'error', code, error: error.message }
   }
 }
@@ -88,7 +95,7 @@ async function fetchWithTimeout(url, timeoutMs = REQUEST_TIMEOUT) {
   }
 }
 
-// ========== HTML 解析（移植自 av-pipeline html-parser.js） ==========
+// ========== HTML 解析 ==========
 function parseSearchResults(html) {
   const results = []
   const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi
@@ -214,9 +221,27 @@ function getCodeMatchScore(result, searchCode) {
   if (!searchCode) return 0
   const text = ((result.title || '') + (result.fileName || '')).toUpperCase()
   const code = searchCode.toUpperCase()
+
+  // 完整番号匹配（带连字符，如 "SVET-19"、"SET-019"）
   if (text.includes(code)) return 100
+
   const codeParts = code.split('-')
-  if (codeParts.length === 2 && text.includes(codeParts[1])) return 50
+  if (codeParts.length === 2) {
+    const prefix = codeParts[0]
+    const number = codeParts[1]
+
+    // 检查文本中是否有匹配的番号格式（带连字符）
+    const codePattern = new RegExp(`${prefix}-${number}`, 'i')
+    if (codePattern.test(text)) return 100
+
+    // 检查文本中是否有匹配的番号格式（无连字符，如 "SVET019"、"SET019"）
+    const codePatternNoDash = new RegExp(`${prefix}${number}`, 'i')
+    if (codePatternNoDash.test(text)) return 90
+
+    // 仅匹配数字部分（降低分数，避免 "Svet19" 匹配 "SVET-19"）
+    if (text.includes(number)) return 50
+  }
+
   return 0
 }
 
