@@ -32,6 +32,20 @@
 
 **使用方式：** 在任意网页选中影视名称，右键点击 **「在豆瓣搜索"关键词"」**，即可在新标签页打开豆瓣的影视搜索结果。
 
+### ☁️ 123盘搜索
+
+| 项目 | 说明 |
+|------|------|
+| 目标网站 | [123分享社区](https://us.pan1.me) — 123云盘资源分享社区 |
+| 搜索模式 | 关键词搜索（主题贴） |
+| 搜索 URL | `us.pan1.me/?search-编码关键词-1.htm` |
+| 版本 | 1.0 |
+| Manifest | V3 |
+
+**使用方式：** 在任意网页选中资源名称（如「星球大战」），右键点击 **「在123盘搜索"星球大战"」**，即可在新标签页打开123分享社区的搜索结果页面。
+
+> **编码说明：** 123盘搜索URL使用自定义编码——先 `encodeURIComponent`，再将 `%` 替换为 `_`。例如「星球大战」编码为 `_E6_98_9F_E7_90_83_E5_A4_A7_E6_88_98`。
+
 ### 🔍 XCili Search
 
 | 项目 | 说明 |
@@ -62,10 +76,11 @@
 5. 选择对应的扩展目录：
    - HDHive → `person-browser-extensions/hdhive-search/`
    - 豆瓣  → `person-browser-extensions/douban-search/`
+   - 123盘 → `person-browser-extensions/123pan-search/`
    - 无极磁力 → `person-browser-extensions/xcili-search/`
 6. 安装完成，右键菜单即可使用
 
-> 💡 **提示：** 三个扩展互相独立，可以只安装其中一个，也可以同时安装。
+> 💡 **提示：** 四个扩展互相独立，可以只安装其中一个，也可以同时安装。
 
 ---
 
@@ -84,6 +99,13 @@ person-browser-extensions/
 │   ├── manifest.json
 │   ├── background.js
 │   └── icon.png
+├── 123pan-search/            # 123盘搜索扩展
+│   ├── manifest.json
+│   ├── background.js
+│   └── icons/
+│       ├── icon16.png
+│       ├── icon48.png
+│       └── icon128.png
 ├── xcili-search/             # 无极磁力搜索扩展
 │   ├── manifest.json
 │   ├── background.js
