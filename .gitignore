@@ -1,1 +1,14 @@
+# macOS
 .DS_Store
+._*
+
+# 编辑器 / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统临时文件
+Thumbs.db
+
