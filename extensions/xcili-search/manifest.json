@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "XCili Search",
-  "version": "1.0.0",
+  "version": "1.1.4",
   "description": "右键选中关键词或手动输入，在无极磁力搜索磁力链接",
-  "permissions": ["contextMenus", "activeTab"],
+  "permissions": ["contextMenus", "activeTab", "storage"],
+  "host_permissions": ["*://xcili.com/*"],
   "background": {
     "service_worker": "background.js"
   },

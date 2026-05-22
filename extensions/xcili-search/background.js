@@ -235,14 +235,36 @@ function getCodeMatchScore(result, searchCode) {
     if (codePattern.test(text)) return 100
 
     // 检查文本中是否有匹配的番号格式（无连字符，如 "SVET019"、"SET019"）
-    const codePatternNoDash = new RegExp(`${prefix}${number}`, 'i')
+    // 零填充到 3 位避免 "Svet19"（网红名）误匹配 "SVET-19"
+    const paddedNumber = number.padStart(3, '0')
+    const codePatternNoDash = new RegExp(`${prefix}${paddedNumber}`, 'i')
     if (codePatternNoDash.test(text)) return 90
 
-    // 仅匹配数字部分（降低分数，避免 "Svet19" 匹配 "SVET-19"）
-    if (text.includes(number)) return 50
+    // prefix 作为番号前缀出现（如 "SIS001(SET-019)"、"SVET-19"）
+    // \b 确保 prefix 是独立单词，后面必须跟连字符或到末尾
+    // 避免 "SVET19"（网红名）中的 "SVET" 被误匹配为番号前缀
+    const prefixBoundary = new RegExp(`\\b${prefix}(?=\\-|$)`, 'i')
+    if (prefixBoundary.test(text) && text.includes(number)) return 50
   }
 
   return 0
+}
+
+function resultMatchesCode(result, searchCode) {
+  if (!searchCode) return false
+  const text = ((result.title || '') + (result.fileName || '')).toUpperCase()
+  const code = searchCode.toUpperCase()
+  if (text.includes(code)) return true
+  const codeParts = code.split('-')
+  if (codeParts.length === 2) {
+    const prefix = codeParts[0]
+    const number = codeParts[1]
+    if (new RegExp(`${prefix}-${number}`, 'i').test(text)) return true
+    const paddedNumber = number.padStart(3, '0')
+    if (new RegExp(`${prefix}${paddedNumber}`, 'i').test(text)) return true
+    if (new RegExp(`\\b${prefix}(?=\\-|$)`, 'i').test(text) && text.includes(number)) return true
+  }
+  return false
 }
 
 function filterResults(results, searchCode) {
@@ -271,10 +293,15 @@ function filterResults(results, searchCode) {
     return (b.sizeBytes || 0) - (a.sizeBytes || 0)
   })
 
+  // 过滤掉不匹配番号的候选（避免 "Svet19" 被选为 "SVET-19" 的结果）
+  const matchedCandidates = searchCode
+    ? candidates.filter(c => resultMatchesCode(c, searchCode))
+    : candidates
+
   // 选择最优
   let best = null
   let bestScore = -1
-  for (const c of candidates.slice(0, 3)) {
+  for (const c of matchedCandidates.slice(0, 3)) {
     let score = getCodeMatchScore(c, searchCode) * 10
     const text = (c.title || '') + (c.fileName || '')
     if (CN_MARKERS.test(text)) score += 100
@@ -285,6 +312,11 @@ function filterResults(results, searchCode) {
       bestScore = score
       best = c
     }
+  }
+
+  // 验证选出的结果真正匹配搜索番号
+  if (best && !resultMatchesCode(best, searchCode)) {
+    best = null
   }
 
   return { best, excluded, candidates }
