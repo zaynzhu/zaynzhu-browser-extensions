@@ -74,10 +74,10 @@
 3. 开启右上角 **「开发者模式」**
 4. 点击 **「加载已解压的扩展程序」**
 5. 选择对应的扩展目录：
-   - HDHive → `person-browser-extensions/hdhive-search/`
-   - 豆瓣  → `person-browser-extensions/douban-search/`
-   - 123盘 → `person-browser-extensions/123pan-search/`
-   - 无极磁力 → `person-browser-extensions/xcili-search/`
+   - HDHive → `person-browser-extensions/extensions/hdhive-search/`
+   - 豆瓣  → `person-browser-extensions/extensions/douban-search/`
+   - 123盘 → `person-browser-extensions/extensions/123pan-search/`
+   - 无极磁力 → `person-browser-extensions/extensions/xcili-search/`
 6. 安装完成，右键菜单即可使用
 
 > 💡 **提示：** 四个扩展互相独立，可以只安装其中一个，也可以同时安装。
@@ -88,31 +88,32 @@
 
 ```
 person-browser-extensions/
-├── hdhive-search/            # HDHive 搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   └── icons/
-│       ├── icon16.png
-│       ├── icon48.png
-│       └── icon128.png
-├── douban-search/            # 豆瓣搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   └── icon.png
-├── 123pan-search/            # 123盘搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   └── icons/
-│       ├── icon16.png
-│       ├── icon48.png
-│       └── icon128.png
-├── xcili-search/             # 无极磁力搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   ├── popup.html
-│   ├── popup.js
-│   ├── popup.css
-│   └── icons/
+├── extensions/
+│   ├── hdhive-search/            # HDHive 搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   └── icons/
+│   │       ├── icon16.png
+│   │       ├── icon48.png
+│   │       └── icon128.png
+│   ├── douban-search/            # 豆瓣搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   └── icon.png
+│   ├── 123pan-search/            # 123盘搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   └── icons/
+│   │       ├── icon16.png
+│   │       ├── icon48.png
+│   │       └── icon128.png
+│   └── xcili-search/             # 无极磁力搜索扩展
+│       ├── manifest.json
+│       ├── background.js
+│       ├── popup.html
+│       ├── popup.js
+│       ├── popup.css
+│       └── icons/
 ├── .gitignore
 └── README.md
 ```

@@ -8,23 +8,24 @@
 
 ```
 person-browser-extensions/
-├── hdhive-search/       # HDHive 搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   └── icons/            # icon16/48/128.png
-├── douban-search/        # 豆瓣搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   └── icon.png
-├── 123pan-search/        # 123盘搜索扩展
-│   ├── manifest.json
-│   ├── background.js
-│   └── icons/            # icon16/48/128.png
-├── xcili-search/         # 无极磁力搜索扩展（右键/手动输入关键词搜磁力）
-│   ├── manifest.json
-│   ├── background.js
-│   ├── popup.html/js/css
-│   └── icons/
+├── extensions/                # 所有扩展的汇总目录
+│   ├── hdhive-search/         # HDHive 搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   └── icons/             # icon16/48/128.png
+│   ├── douban-search/          # 豆瓣搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   └── icon.png
+│   ├── 123pan-search/          # 123盘搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   └── icons/              # icon16/48/128.png
+│   └── xcili-search/           # 无极磁力搜索扩展（右键/手动输入关键词搜磁力）
+│       ├── manifest.json
+│       ├── background.js
+│       ├── popup.html/js/css
+│       └── icons/
 ├── CLAUDE.md
 ├── README.md
 └── .gitignore
@@ -40,7 +41,7 @@ person-browser-extensions/
 ## 开发约定
 
 - 每个扩展独立，互不依赖，可单独安装和发布
-- 新增搜索扩展时创建独立子目录，结构参照现有扩展
+- 新增搜索扩展时在 `extensions/` 下创建独立子目录，结构参照现有扩展
 - `background.js` 统一使用 `const` 声明常量，模板字符串拼接 URL
 - 搜索 URL 中的查询参数必须 `encodeURIComponent` 编码
 - 图标推荐提供 16/48/128 三种尺寸（多尺寸放 `icons/` 目录，单文件也可）
