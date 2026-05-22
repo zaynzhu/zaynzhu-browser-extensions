@@ -35,7 +35,7 @@ person-browser-extensions/
 
 - Chrome Manifest V3
 - Service Worker（后台运行）
-- 仅申请 `contextMenus` 权限
+- 简单搜索扩展仅申请 `contextMenus` 权限；xcili-search 额外申请 `activeTab` 和 `storage`
 - 零依赖，纯原生 JS
 
 ## 开发约定

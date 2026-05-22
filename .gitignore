@@ -12,3 +12,6 @@
 # 系统临时文件
 Thumbs.db
 
+# Playwright MCP 调试文件
+.playwright-mcp/
+

@@ -123,8 +123,8 @@ person-browser-extensions/
 ## 🔧 技术细节
 
 - **Manifest V3** — 使用最新 Chrome 扩展标准，Service Worker 后台运行
-- **极简权限** — 仅申请 `contextMenus` 权限，不读取网页内容、不追踪用户行为
-- **零依赖** — 无需任何第三方库，代码总量不足 30 行
+- **极简权限** — 简单搜索扩展仅申请 `contextMenus`；xcili-search 额外申请 `activeTab` 和 `storage`
+- **零依赖** — 无需任何第三方库
 - **新标签打开** — 搜索结果在独立标签页展示，不干扰当前浏览
 
 ---
