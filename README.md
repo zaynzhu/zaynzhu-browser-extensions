@@ -62,6 +62,22 @@
 
 搜索结果展示在弹窗中：标题、大小、磁力链接（可一键复制）、发布日期、种子特征码。
 
+### 🔎 不太灵搜索
+
+| 项目 | 说明 |
+|------|------|
+| 目标网站 | [不太灵](https://web2.mukaku.com) — 磁力链接搜索引擎 |
+| 搜索模式 | 关键词搜索，支持自定义搜索主页（域名经常变更） |
+| 搜索 URL | `web2.mukaku.com/search?sb=关键词` |
+| 版本 | 1.0.0 |
+| Manifest | V3 |
+
+**使用方式：** 两种方式——
+1. **右键搜索：** 在任意网页选中关键词，右键点击 **「在不太灵搜索"关键词"」**
+2. **修改域名：** 点击扩展图标，在弹窗中修改搜索主页地址并保存，右键搜索将使用新域名
+
+> **提示：** 不太灵的域名经常变更，遇到搜索失效时点击扩展图标修改主页地址即可。
+
 ---
 
 ## 🚀 安装方法
@@ -78,9 +94,10 @@
    - 豆瓣  → `person-browser-extensions/extensions/douban-search/`
    - 123盘 → `person-browser-extensions/extensions/123pan-search/`
    - 无极磁力 → `person-browser-extensions/extensions/xcili-search/`
+   - 不太灵 → `person-browser-extensions/extensions/mukaku-search/`
 6. 安装完成，右键菜单即可使用
 
-> 💡 **提示：** 四个扩展互相独立，可以只安装其中一个，也可以同时安装。
+> 💡 **提示：** 五个扩展互相独立，可以只安装其中一个，也可以同时安装。
 
 ---
 
@@ -114,6 +131,13 @@ person-browser-extensions/
 │       ├── popup.js
 │       ├── popup.css
 │       └── icons/
+│   └── mukaku-search/             # 不太灵搜索扩展
+│       ├── manifest.json
+│       ├── background.js
+│       ├── popup.html
+│       ├── popup.js
+│       ├── popup.css
+│       └── icons/
 ├── .gitignore
 └── README.md
 ```
@@ -123,7 +147,7 @@ person-browser-extensions/
 ## 🔧 技术细节
 
 - **Manifest V3** — 使用最新 Chrome 扩展标准，Service Worker 后台运行
-- **极简权限** — 简单搜索扩展仅申请 `contextMenus`；xcili-search 额外申请 `activeTab` 和 `storage`
+- **极简权限** — 简单搜索扩展仅申请 `contextMenus`；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`
 - **零依赖** — 无需任何第三方库
 - **新标签打开** — 搜索结果在独立标签页展示，不干扰当前浏览
 
