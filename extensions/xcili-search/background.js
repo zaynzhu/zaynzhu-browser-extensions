@@ -15,11 +15,39 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'search-xcili' && info.selectionText) {
     const code = info.selectionText.trim()
+    setBadge('...', '#4a90d9')
+    chrome.storage.local.set({ searchInProgress: code })
     doSearch(code).then((result) => {
+      chrome.storage.local.remove('searchInProgress')
       chrome.storage.local.set({ lastSearch: { code, result } })
+      if (result.status === 'confirmed') {
+        setBadge('✓', '#2e7d32')
+        openPopupSafe()
+      } else if (result.status === 'not_found') {
+        setBadge('?', '#ef6c00')
+      } else {
+        setBadge('!', '#c62828')
+      }
+      clearBadgeDelayed(5000)
     })
   }
 })
+
+// ========== Badge 状态 ==========
+function setBadge(text, color) {
+  chrome.action.setBadgeText({ text })
+  chrome.action.setBadgeBackgroundColor({ color })
+}
+
+let badgeTimer = null
+function clearBadgeDelayed(ms) {
+  clearTimeout(badgeTimer)
+  badgeTimer = setTimeout(() => chrome.action.setBadgeText({ text: '' }), ms)
+}
+
+function openPopupSafe() {
+  try { chrome.action.openPopup() } catch (e) { /* 静默失败，用户可点击图标查看 */ }
+}
 
 // ========== 消息处理（来自 popup） ==========
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

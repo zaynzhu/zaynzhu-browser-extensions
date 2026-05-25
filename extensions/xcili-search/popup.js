@@ -10,12 +10,35 @@ const magnetInput = document.getElementById('magnetInput')
 const copyBtn = document.getElementById('copyBtn')
 
 // 加载上次搜索结果
-chrome.runtime.sendMessage({ type: 'GET_LAST' }, (data) => {
-  if (data?.result?.status === 'confirmed') {
-    codeInput.value = data.code
-    showResult(data.result)
+chrome.storage.local.get(['lastSearch', 'searchInProgress'], (store) => {
+  if (store.searchInProgress) {
+    codeInput.value = store.searchInProgress
+    showStatus('loading', '搜索中...')
+    searchBtn.disabled = true
+    pollForResult(store.searchInProgress)
+  } else if (store.lastSearch?.result?.status === 'confirmed') {
+    codeInput.value = store.lastSearch.code
+    showResult(store.lastSearch.result)
   }
 })
+
+function pollForResult(code) {
+  const timer = setInterval(() => {
+    chrome.storage.local.get(['lastSearch', 'searchInProgress'], (store) => {
+      if (!store.searchInProgress) {
+        clearInterval(timer)
+        searchBtn.disabled = false
+        if (store.lastSearch?.result?.status === 'confirmed') {
+          showResult(store.lastSearch.result)
+        } else {
+          showStatus('empty', '未找到结果')
+        }
+      }
+    })
+  }, 500)
+  // 10 秒超时
+  setTimeout(() => { clearInterval(timer); searchBtn.disabled = false }, 10000)
+}
 
 // 搜索按钮
 searchBtn.addEventListener('click', doSearch)
