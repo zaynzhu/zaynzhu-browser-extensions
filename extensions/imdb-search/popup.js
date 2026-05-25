@@ -22,7 +22,7 @@ chrome.storage.local.get('tmdbApiKey', (data) => {
   }
 })
 
-async function doSearch() {
+function doSearch() {
   const keyword = keywordInput.value.trim()
   if (!keyword) return
 
@@ -31,6 +31,11 @@ async function doSearch() {
 
   chrome.runtime.sendMessage({ type: 'SEARCH', keyword }, (result) => {
     searchBtn.disabled = false
+
+    if (chrome.runtime.lastError || !result) {
+      showStatus('error', '搜索失败: 无法连接到后台服务')
+      return
+    }
 
     if (result.status === 'no_api_key') {
       showStatus('warning', '未配置 API Key，已用中文搜索')
