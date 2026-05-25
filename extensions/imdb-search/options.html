@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h3>IMDB 搜索设置</h3>
+    <p class="hint">配置 TMDB API Key 以启用中文翻译功能</p>
+
+    <div class="form-group">
+      <label for="apiKeyInput">TMDB API Key</label>
+      <div class="input-row">
+        <input type="text" id="apiKeyInput" placeholder="输入你的 TMDB API Key">
+        <button id="saveBtn">保存</button>
+      </div>
+      <p class="help-text">
+        从 <a href="https://www.themoviedb.org/settings/api" target="_blank">TMDB 官网</a> 获取 API Key
+      </p>
+    </div>
+
+    <div class="form-group">
+      <button id="testBtn" class="secondary">测试 API Key</button>
+      <div id="testResult" class="status hidden"></div>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
