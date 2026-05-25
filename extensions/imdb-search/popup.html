@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h3>IMDB 搜索</h3>
+    <p class="hint">输入中文关键词，自动翻译后搜索 IMDB</p>
+    <div class="search-bar">
+      <input type="text" id="keywordInput" placeholder="输入电影名（中文）" autofocus>
+      <button id="searchBtn">搜索</button>
+    </div>
+    <div id="status" class="status hidden"></div>
+    <div class="actions">
+      <a href="#" id="settingsLink">配置 API Key</a>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
