@@ -1,4 +1,4 @@
-# person-browser-extensions 开发规范
+# zaynzhu-browser-extensions 开发规范
 
 ## 项目概述
 
@@ -7,7 +7,7 @@
 ## 目录结构
 
 ```
-person-browser-extensions/
+zaynzhu-browser-extensions/
 ├── extensions/                # 所有扩展的汇总目录
 │   ├── hdhive-search/         # HDHive 搜索扩展
 │   │   ├── manifest.json
