@@ -38,19 +38,30 @@ testBtn.addEventListener('click', async () => {
   testBtn.textContent = '测试中...'
   showTestResult('info', '正在测试...')
 
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 10000)
+
   try {
     const url = `${TMDB_API_BASE}/configuration?api_key=${apiKey}`
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: controller.signal })
 
     if (response.ok) {
       showTestResult('success', 'API Key 有效')
     } else {
-      const data = await response.json()
-      showTestResult('error', `API Key 无效: ${data.status_message || '未知错误'}`)
+      let data = {}
+      try {
+        data = await response.json()
+      } catch (_) {}
+      showTestResult('error', `API Key 无效 (${response.status}): ${data.status_message || '未知错误'}`)
     }
   } catch (error) {
-    showTestResult('error', `测试失败: ${error.message}`)
+    if (error.name === 'AbortError') {
+      showTestResult('error', '测试超时，请检查网络连接')
+    } else {
+      showTestResult('error', `测试失败: ${error.message}`)
+    }
   } finally {
+    clearTimeout(timer)
     testBtn.disabled = false
     testBtn.textContent = '测试 API Key'
   }
