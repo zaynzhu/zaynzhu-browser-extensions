@@ -3,7 +3,7 @@
   "name": "IMDB Search",
   "version": "1.0.0",
   "description": "右键选中中文文字，在 IMDB 搜索电影（通过 TMDB API 翻译）",
-  "permissions": ["contextMenus", "storage", "activeTab"],
+  "permissions": ["contextMenus", "storage"],
   "host_permissions": ["https://api.themoviedb.org/*"],
   "background": {
     "service_worker": "background.js"

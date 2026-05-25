@@ -78,6 +78,22 @@
 
 > **提示：** 不太灵的域名经常变更，遇到搜索失效时点击扩展图标修改主页地址即可。
 
+### 🎬 IMDB Search
+
+| 项目 | 说明 |
+|------|------|
+| 目标网站 | [IMDB](https://www.imdb.com) — 全球最大影视数据库 |
+| 搜索模式 | 中文关键词自动翻译后搜索（通过 TMDB API） |
+| 搜索 URL | `imdb.com/find/q=关键词` |
+| 版本 | 1.0.0 |
+| Manifest | V3 |
+
+**使用方式：** 两种方式——
+1. **右键搜索：** 在任意网页选中影视名称（中文或英文），右键点击 **「在 IMDB 搜索"关键词"」**
+2. **手动输入：** 点击扩展图标，在弹窗中输入关键词搜索
+
+**翻译功能：** 配置 TMDB API Key 后，中文关键词会自动翻译为英文再搜索 IMDB。华语电影会跳过翻译直接搜索。未配置 API Key 时使用中文直接搜索。
+
 ---
 
 ## 🚀 安装方法
@@ -95,9 +111,10 @@
    - 123盘 → `person-browser-extensions/extensions/123pan-search/`
    - 无极磁力 → `person-browser-extensions/extensions/xcili-search/`
    - 不太灵 → `person-browser-extensions/extensions/mukaku-search/`
+   - IMDB  → `person-browser-extensions/extensions/imdb-search/`
 6. 安装完成，右键菜单即可使用
 
-> 💡 **提示：** 五个扩展互相独立，可以只安装其中一个，也可以同时安装。
+> 💡 **提示：** 六个扩展互相独立，可以只安装其中一个，也可以同时安装。
 
 ---
 
@@ -131,12 +148,22 @@ person-browser-extensions/
 │       ├── popup.js
 │       ├── popup.css
 │       └── icons/
-│   └── mukaku-search/             # 不太灵搜索扩展
+│   ├── mukaku-search/             # 不太灵搜索扩展
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   ├── popup.html
+│   │   ├── popup.js
+│   │   ├── popup.css
+│   │   └── icons/
+│   └── imdb-search/               # IMDB 搜索扩展
 │       ├── manifest.json
 │       ├── background.js
 │       ├── popup.html
 │       ├── popup.js
 │       ├── popup.css
+│       ├── options.html
+│       ├── options.js
+│       ├── options.css
 │       └── icons/
 ├── .gitignore
 └── README.md

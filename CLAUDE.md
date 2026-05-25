@@ -26,10 +26,16 @@ person-browser-extensions/
 │   │   ├── background.js
 │   │   ├── popup.html/js/css
 │   │   └── icons/
-│   └── mukaku-search/           # 不太灵搜索扩展（右键搜索，支持自定义搜索主页）
+│   ├── mukaku-search/           # 不太灵搜索扩展（右键搜索，支持自定义搜索主页）
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   ├── popup.html/js/css
+│   │   └── icons/
+│   └── imdb-search/             # IMDB 搜索扩展（右键搜索，通过 TMDB API 翻译中文）
 │       ├── manifest.json
 │       ├── background.js
 │       ├── popup.html/js/css
+│       ├── options.html/js/css
 │       └── icons/
 ├── CLAUDE.md
 ├── README.md
@@ -40,7 +46,7 @@ person-browser-extensions/
 
 - Chrome Manifest V3
 - Service Worker（后台运行）
-- 简单搜索扩展仅申请 `contextMenus` 权限；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`
+- 简单搜索扩展仅申请 `contextMenus` 权限；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`；imdb-search 申请 `storage`
 - 零依赖，纯原生 JS
 
 ## 开发约定
@@ -60,6 +66,7 @@ person-browser-extensions/
 | 123盘 | `https://us.pan1.me/?search-{encoded}-1.htm`（编码规则：`encodeURIComponent` 后 `%` → `_`） |
 | XCili | `https://xcili.com/search?q={keyword}` |
 | 不太灵 | `https://web2.mukaku.com/search?sb={keyword}`（域名可配置，存储在 `chrome.storage`） |
+| IMDB | `https://www.imdb.com/find/?q={keyword}`（中文通过 TMDB API 翻译后搜索） |
 
 ## 发布流程
 

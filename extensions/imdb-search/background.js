@@ -74,8 +74,13 @@ async function translateWithTMDB(keyword, apiKey) {
     const data = await response.json()
 
     if (data.results && data.results.length > 0) {
-      // 返回第一个结果的英文名
-      return data.results[0].original_title
+      const result = data.results[0]
+      // 中文电影的 original_title 本身就是中文，翻译无意义
+      if (result.original_language === 'zh') {
+        return null
+      }
+      // 返回第一个结果的原始语言标题（通常为英文）
+      return result.original_title
     }
     return null
   } catch (error) {
