@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "KuakeQ Search",
   "version": "1.0.0",
-  "description": "右键选中文字，在夸客网搜索磁力链接，支持自定义搜索主页",
+  "description": "右键选中文字，在夸克圈搜索磁力链接，支持自定义搜索主页",
   "permissions": ["contextMenus", "storage"],
   "background": {
     "service_worker": "background.js"

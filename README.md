@@ -7,7 +7,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/zaynzhu/zaynzhu-browser-extensions?style=flat&logo=github&color=yellow&label=Stars)](https://github.com/zaynzhu/zaynzhu-browser-extensions/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/zaynzhu/zaynzhu-browser-extensions?style=flat&logo=github&color=purple&label=Forks)](https://github.com/zaynzhu/zaynzhu-browser-extensions/network)
 [![Last Commit](https://img.shields.io/github/last-commit/zaynzhu/zaynzhu-browser-extensions?logo=github&label=Last%20Commit)](https://github.com/zaynzhu/zaynzhu-browser-extensions/commits/main)
-[![Extensions](https://img.shields.io/badge/Extensions-6-6366f1?style=flat&logo=googlechrome&logoColor=white)](./extensions/)
+[![Extensions](https://img.shields.io/badge/Extensions-7-6366f1?style=flat&logo=googlechrome&logoColor=white)](./extensions/)
 [![Manifest](https://img.shields.io/badge/Manifest-V3-4EAA25?style=flat&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![License](https://img.shields.io/badge/License-MIT-0ea5e9?style=flat&logo=opensourceinitiative&logoColor=white)](./LICENSE)
 
@@ -24,6 +24,7 @@
 | ☁️ | [**123盘 Search**](./extensions/123pan-search/) | [us.pan1.me](https://us.pan1.me) | 123 云盘资源分享社区搜索 | `stable` |
 | 🔍 | [**XCili Search**](./extensions/xcili-search/) | [xcili.com](https://xcili.com) | 磁力链接搜索，弹窗展示结果，支持一键复制磁力链接 | `stable` |
 | 🔎 | [**Mukaku Search**](./extensions/mukaku-search/) | [web2.mukaku.com](https://web2.mukaku.com) | 不太灵磁力搜索，支持自定义搜索主页（域名经常变更） | `stable` |
+| 🧲 | [**KuakeQ Search**](./extensions/kuakeq-search/) | [kuakeq.com](https://www.kuakeq.com) | 夸克圈磁力搜索，支持自定义搜索主页 | `stable` |
 | 🎬 | [**IMDB Search**](./extensions/imdb-search/) | [imdb.com](https://www.imdb.com) | 中文关键词通过 TMDB API 自动翻译后搜索 IMDB | `stable` |
 
 ---
@@ -38,7 +39,7 @@
 
 ### 手动输入搜索
 
-XCili、Mukaku、IMDB 三个扩展支持点击扩展图标，在弹窗中手动输入关键词搜索。
+XCili、Mukaku、KuakeQ、IMDB 四个扩展支持点击扩展图标，在弹窗中手动输入关键词或配置域名。
 
 ### IMDB 翻译功能
 
@@ -75,9 +76,10 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | 123盘 | `extensions/123pan-search/` |
 | 无极磁力 | `extensions/xcili-search/` |
 | 不太灵 | `extensions/mukaku-search/` |
+| 夸克圈 | `extensions/kuakeq-search/` |
 | IMDB | `extensions/imdb-search/` |
 
-> 六个扩展互相独立，可按需安装，也可以同时安装全部。
+> 七个扩展互相独立，可按需安装，也可以同时安装全部。
 
 ---
 
@@ -90,6 +92,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | 123盘 | ✅ | - | - | 纯右键跳转 |
 | XCili | ✅ | ✅ | ✅ | 弹窗搜索 + 结果展示 |
 | Mukaku | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
+| KuakeQ | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | IMDB | ✅ | ✅ | - | 弹窗 + API Key 配置存储 |
 
 所有扩展均不采集任何用户数据。
@@ -126,6 +129,11 @@ zaynzhu-browser-extensions/
     │   ├── background.js
     │   ├── popup.html / js / css
     │   └── icons/
+    ├── kuakeq-search/            # 夸克圈 — 弹窗 + 域名配置
+    │   ├── manifest.json
+    │   ├── background.js
+    │   ├── popup.html / js / css
+    │   └── icons/
     └── imdb-search/             # IMDB — 弹窗 + API Key 配置
         ├── manifest.json
         ├── background.js
@@ -145,6 +153,7 @@ zaynzhu-browser-extensions/
 | 123盘 | `us.pan1.me/?search-{encoded}-1.htm`（`encodeURIComponent` 后 `%` → `_`） |
 | XCili | `xcili.com/search?q={keyword}` |
 | 不太灵 | `web2.mukaku.com/search?sb={keyword}`（域名可配置） |
+| KuakeQ | `kuakeq.com/search-{encoded}-1-1.htm`（`encodeURIComponent` 后 `%` → `_`，域名可配置） |
 | IMDB | `imdb.com/find/?q={keyword}`（中文通过 TMDB 翻译后搜索） |
 
 ---
