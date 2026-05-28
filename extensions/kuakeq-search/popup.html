@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h3>KuakeQ - 搜索主页设置</h3>
+    <p class="hint">KuakeQ 域名可能变更，在此修改搜索主页地址</p>
+    <div class="form-row">
+      <input type="text" id="baseUrlInput" placeholder="https://www.kuakeq.com">
+      <button id="saveBtn">保存</button>
+    </div>
+    <div id="status" class="status hidden"></div>
+    <div class="actions">
+      <button id="resetBtn" class="link-btn">恢复默认</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
