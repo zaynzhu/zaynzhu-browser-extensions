@@ -1,35 +1,35 @@
-const DEFAULT_BASE_URL = 'https://web2.mukaku.com'
-
+const mukakuSearch = globalThis.MukakuSearch
 const baseUrlInput = document.getElementById('baseUrlInput')
 const saveBtn = document.getElementById('saveBtn')
 const resetBtn = document.getElementById('resetBtn')
 const statusEl = document.getElementById('status')
 
 // 加载当前设置
-chrome.storage.local.get('mukakuBaseUrl', (data) => {
-  baseUrlInput.value = data.mukakuBaseUrl || DEFAULT_BASE_URL
+chrome.storage.local.get(mukakuSearch.STORAGE_KEY, (data) => {
+  baseUrlInput.value = data[mukakuSearch.STORAGE_KEY] || mukakuSearch.DEFAULT_BASE_URL
 })
 
 // 保存
 saveBtn.addEventListener('click', () => {
-  let url = baseUrlInput.value.trim().replace(/\/+$/, '')
-  if (!url) {
+  const inputUrl = baseUrlInput.value.trim()
+
+  if (!inputUrl) {
     showStatus('请输入搜索主页地址', 'error')
     return
   }
-  if (!/^https?:\/\//.test(url)) {
-    url = 'https://' + url
-    baseUrlInput.value = url
-  }
-  chrome.storage.local.set({ mukakuBaseUrl: url }, () => {
+
+  const url = mukakuSearch.normalizeBaseUrl(inputUrl)
+  baseUrlInput.value = url
+
+  chrome.storage.local.set({ [mukakuSearch.STORAGE_KEY]: url }, () => {
     showStatus('已保存', 'success')
   })
 })
 
 // 恢复默认
 resetBtn.addEventListener('click', () => {
-  baseUrlInput.value = DEFAULT_BASE_URL
-  chrome.storage.local.set({ mukakuBaseUrl: DEFAULT_BASE_URL }, () => {
+  baseUrlInput.value = mukakuSearch.DEFAULT_BASE_URL
+  chrome.storage.local.set({ [mukakuSearch.STORAGE_KEY]: mukakuSearch.DEFAULT_BASE_URL }, () => {
     showStatus('已恢复默认', 'success')
   })
 })
