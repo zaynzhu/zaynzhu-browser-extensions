@@ -31,6 +31,7 @@ zaynzhu-browser-extensions/
 │   ├── mukaku-search/           # 不太灵搜索扩展（右键搜索，支持自定义搜索主页）
 │   │   ├── manifest.json
 │   │   ├── background.js
+│   │   ├── search-url.js
 │   │   ├── popup.html/js/css
 │   │   └── icons/
 │   ├── kuakeq-search/            # 夸克圈搜索扩展（右键搜索磁力链接，支持自定义搜索主页）

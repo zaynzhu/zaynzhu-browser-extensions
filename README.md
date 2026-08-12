@@ -135,6 +135,7 @@ zaynzhu-browser-extensions/
     ├── mukaku-search/           # 不太灵 — 弹窗 + 域名配置
     │   ├── manifest.json
     │   ├── background.js
+    │   ├── search-url.js
     │   ├── popup.html / js / css
     │   └── icons/
     ├── kuakeq-search/            # 夸克圈 — 弹窗 + 域名配置
