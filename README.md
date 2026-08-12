@@ -19,7 +19,7 @@
 
 | &nbsp; | 扩展 | 目标网站 | 简介 | 状态 |
 |:------:|------|----------|------|:----:|
-| 🐝 | [**HDHive Search**](./extensions/hdhive-search/) | [hdhive.com](https://hdhive.com) | 基于 TMDB 的影视资料聚合搜索（电影+剧集） | `stable` |
+| 🐝 | [**HDHive Search**](./extensions/hdhive-search/) | [hdhive.com](https://hdhive.com) | 基于 TMDB 的影视资料聚合搜索（电影+剧集），支持自定义搜索主页 | `stable` |
 | 📖 | [**Douban Search**](./extensions/douban-search/) | [search.douban.com](https://search.douban.com) | 豆瓣影视评分搜索 | `stable` |
 | ☁️ | [**123盘 Search**](./extensions/123pan-search/) | [us.pan1.me](https://us.pan1.me) | 123 云盘资源分享社区搜索 | `stable` |
 | 🔍 | [**XCili Search**](./extensions/xcili-search/) | [xcili.com](https://xcili.com) | 磁力链接搜索，弹窗展示结果，支持一键复制磁力链接 | `stable` |
@@ -41,7 +41,7 @@
 
 ### 手动输入搜索
 
-XCili、IMDB 支持点击扩展图标手动输入关键词；Mukaku、KuakeQ、Jiaofu、SubHD 支持在弹窗中配置搜索主页地址。
+XCili、IMDB 支持点击扩展图标手动输入关键词；HDHive、Mukaku、KuakeQ、Jiaofu、SubHD 支持在弹窗中配置搜索主页地址。
 
 ### IMDB 翻译功能
 
@@ -56,7 +56,7 @@ IMDB 扩展通过 [TMDB API](https://www.themoviedb.org/) 将中文关键词翻�
 
 ### 可配置搜索主页
 
-不太灵、夸克圈、教父、SubHD 的域名可能变更。点击对应扩展图标，在弹窗中修改搜索主页地址并保存即可，右键搜索将自动使用新域名。
+HDHive、不太灵、夸克圈、教父、SubHD 支持自定义搜索主页地址。点击对应扩展图标，在弹窗中修改并保存即可，右键搜索将自动使用新地址。
 
 ---
 
@@ -91,7 +91,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 
 | 扩展 | `contextMenus` | `storage` | `activeTab` | 说明 |
 |------|:--------------:|:---------:|:-----------:|------|
-| HDHive | ✅ | - | - | 纯右键跳转 |
+| HDHive | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | 豆瓣 | ✅ | - | - | 纯右键跳转 |
 | 123盘 | ✅ | - | - | 纯右键跳转 |
 | XCili | ✅ | ✅ | ✅ | 弹窗搜索 + 结果展示 |
@@ -113,9 +113,11 @@ zaynzhu-browser-extensions/
 ├── CLAUDE.md
 ├── .gitignore
 └── extensions/
-    ├── hdhive-search/           # 聚合搜索 — manifest + background.js
+    ├── hdhive-search/           # 聚合搜索 — 弹窗 + 域名配置
     │   ├── manifest.json
     │   ├── background.js
+    │   ├── search-url.js
+    │   ├── popup.html / js / css
     │   └── icons/
     ├── douban-search/           # 豆瓣搜索 — manifest + background.js
     │   ├── manifest.json
@@ -166,7 +168,7 @@ zaynzhu-browser-extensions/
 
 | 扩展 | URL 模板 |
 |------|----------|
-| HDHive | `hdhive.com/search?query={keyword}&type=multi&page=1` |
+| HDHive | `hdhive.com/search?query={keyword}&type=multi&page=1`（域名可配置） |
 | 豆瓣 | `search.douban.com/movie/subject_search?search_text={keyword}` |
 | 123盘 | `us.pan1.me/?search-{encoded}-1.htm`（`encodeURIComponent` 后 `%` → `_`） |
 | XCili | `xcili.com/search?q={keyword}` |
