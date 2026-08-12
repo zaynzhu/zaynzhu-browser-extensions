@@ -3,7 +3,7 @@
   "name": "HDHive Search",
   "version": "1.0.0",
   "description": "右键选中文字，在 HDHive 中搜索影视资料",
-  "permissions": ["contextMenus"],
+  "permissions": ["contextMenus", "storage"],
   "background": {
     "service_worker": "background.js"
   },
