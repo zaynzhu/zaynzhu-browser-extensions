@@ -7,7 +7,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/zaynzhu/zaynzhu-browser-extensions?style=flat&logo=github&color=yellow&label=Stars)](https://github.com/zaynzhu/zaynzhu-browser-extensions/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/zaynzhu/zaynzhu-browser-extensions?style=flat&logo=github&color=purple&label=Forks)](https://github.com/zaynzhu/zaynzhu-browser-extensions/network)
 [![Last Commit](https://img.shields.io/github/last-commit/zaynzhu/zaynzhu-browser-extensions?logo=github&label=Last%20Commit)](https://github.com/zaynzhu/zaynzhu-browser-extensions/commits/main)
-[![Extensions](https://img.shields.io/badge/Extensions-9-6366f1?style=flat&logo=googlechrome&logoColor=white)](./extensions/)
+[![Extensions](https://img.shields.io/badge/Extensions-10-6366f1?style=flat&logo=googlechrome&logoColor=white)](./extensions/)
 [![Manifest](https://img.shields.io/badge/Manifest-V3-4EAA25?style=flat&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![License](https://img.shields.io/badge/License-MIT-0ea5e9?style=flat&logo=opensourceinitiative&logoColor=white)](./LICENSE)
 
@@ -27,6 +27,7 @@
 | 🧲 | [**KuakeQ Search**](./extensions/kuakeq-search/) | [kuakeq.com](https://www.kuakeq.com) | 夸克圈磁力搜索，支持自定义搜索主页 | `stable` |
 | 🎩 | [**Jiaofu Search**](./extensions/jiaofu-search/) | [教父.com](https://www.xn--wcv59z.com) | 教父影视资源搜索，支持自定义搜索主页 | `stable` |
 | 💬 | [**SubHD Search**](./extensions/subhd-search/) | [subhd.tv](https://subhd.tv) | SubHD 字幕搜索，支持自定义搜索主页 | `stable` |
+| 📡 | [**TTD Search**](./extensions/tgtodrive-search/) | NAS 自建 TgtoDrive | 在 TgtoDrive 影视探索页自动填词搜索（注入式），支持自定义地址 | `stable` |
 | 🎬 | [**IMDB Search**](./extensions/imdb-search/) | [imdb.com](https://www.imdb.com) | 中文关键词通过 TMDB API 自动翻译后搜索 IMDB | `stable` |
 
 ---
@@ -56,7 +57,9 @@ IMDB 扩展通过 [TMDB API](https://www.themoviedb.org/) 将中文关键词翻�
 
 ### 可配置搜索主页
 
-HDHive、不太灵、夸克圈、教父、SubHD 支持自定义搜索主页地址。点击对应扩展图标，在弹窗中修改并保存即可，右键搜索将自动使用新地址。
+HDHive、不太灵、夸克圈、教父、SubHD、TTD 支持自定义搜索主页地址。点击对应扩展图标，在弹窗中修改并保存即可，右键搜索将自动使用新地址。
+
+TTD 搜索的是 NAS 上自建的 TgtoDrive 管理台"影视探索"页：搜索不走 URL 参数，扩展会定位（或新开）TTD 标签页，自动填入关键词并模拟回车，**需要浏览器已登录 TgtoDrive**。已打开 TTD 时直接在原页面搜索，不再重复开标签页。
 
 ---
 
@@ -81,9 +84,10 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | 夸克圈 | `extensions/kuakeq-search/` |
 | 教父 | `extensions/jiaofu-search/` |
 | SubHD | `extensions/subhd-search/` |
+| TTD | `extensions/tgtodrive-search/` |
 | IMDB | `extensions/imdb-search/` |
 
-> 九个扩展互相独立，可按需安装，也可以同时安装全部。
+> 十个扩展互相独立，可按需安装，也可以同时安装全部。
 
 ---
 
@@ -99,6 +103,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | KuakeQ | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | Jiaofu | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | SubHD | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
+| TTD | ✅ | ✅ | - | 弹窗 + 地址配置存储 + 注入填词（`scripting`，host `<all_urls>`） |
 | IMDB | ✅ | ✅ | - | 弹窗 + API Key 配置存储 |
 
 所有扩展均不采集任何用户数据。
@@ -155,6 +160,12 @@ zaynzhu-browser-extensions/
     │   ├── search-url.js
     │   ├── popup.html / js / css
     │   └── icons/
+    ├── tgtodrive-search/          # TTD（NAS 自建 TgtoDrive）— 弹窗 + 地址配置 + 注入式搜索
+    │   ├── manifest.json
+    │   ├── background.js
+    │   ├── search-url.js
+    │   ├── popup.html / js / css
+    │   └── icons/
     └── imdb-search/             # IMDB — 弹窗 + API Key 配置
         ├── manifest.json
         ├── background.js
@@ -177,6 +188,7 @@ zaynzhu-browser-extensions/
 | KuakeQ | `kuakeq.com/search-{encoded}-1-1.htm`（`encodeURIComponent` 后 `%` → `_`，域名可配置） |
 | Jiaofu | `www.xn--wcv59z.com/search?q={keyword}&type=&mode=1`（域名可配置） |
 | SubHD | `subhd.tv/search/{keyword}`（域名可配置） |
+| TTD | 不走 URL 参数：打开配置地址 → 注入脚本填入 `#md-library-query` 并模拟 Enter（地址可配置，需已登录） |
 | IMDB | `imdb.com/find/?q={keyword}`（中文通过 TMDB 翻译后搜索） |
 
 ---

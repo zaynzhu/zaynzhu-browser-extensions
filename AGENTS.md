@@ -51,6 +51,12 @@ zaynzhu-browser-extensions/
 │   │   ├── search-url.js
 │   │   ├── popup.html/js/css
 │   │   └── icons/
+│   ├── tgtodrive-search/         # TTD 搜索扩展（右键搜索 NAS 上 TgtoDrive 影视探索，注入式，支持自定义地址）
+│   │   ├── manifest.json
+│   │   ├── background.js
+│   │   ├── search-url.js
+│   │   ├── popup.html/js/css
+│   │   └── icons/
 │   └── imdb-search/             # IMDB 搜索扩展（右键搜索，通过 TMDB API 翻译中文）
 │       ├── manifest.json
 │       ├── background.js
@@ -66,7 +72,7 @@ zaynzhu-browser-extensions/
 
 - Chrome Manifest V3
 - Service Worker（后台运行）
-- 简单搜索扩展仅申请 `contextMenus` 权限；hdhive-search 额外申请 `storage`；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`；kuakeq-search 额外申请 `storage`；jiaofu-search 额外申请 `storage`；subhd-search 额外申请 `storage`；imdb-search 申请 `storage`
+- 简单搜索扩展仅申请 `contextMenus` 权限；hdhive-search 额外申请 `storage`；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`；kuakeq-search 额外申请 `storage`；jiaofu-search 额外申请 `storage`；subhd-search 额外申请 `storage`；imdb-search 申请 `storage`；tgtodrive-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（目标为自建 NAS，地址可配置无法预先限定）
 - 零依赖，纯原生 JS
 
 ## 开发约定
@@ -90,6 +96,7 @@ zaynzhu-browser-extensions/
 | 教父 | `https://www.xn--wcv59z.com/search?q={keyword}&type=&mode=1`（域名可配置） |
 | SubHD | `https://subhd.tv/search/{keyword}`（域名可配置） |
 | IMDB | `https://www.imdb.com/find/?q={keyword}`（中文通过 TMDB API 翻译后搜索） |
+| TTD | 不走 URL 参数（搜索为纯前端状态）：打开配置地址后注入脚本，先点击 `.nav-item[data-target="media-library-section"]` 切到影视探索区块（单页多 section，URL 不变），再向 `#md-library-query` 填词并模拟 Enter；复用已打开的 TTD 标签页（地址可配置，存储在 `chrome.storage`，需浏览器已登录 TgtoDrive） |
 
 ## 发布流程
 
