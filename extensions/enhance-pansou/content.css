@@ -1,0 +1,86 @@
+/* 盘搜～观影增强：注入元素样式（贴合站点暗色主题） */
+
+.pansou-enhance-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 10px;
+  border-radius: 6px;
+  color: #7ab8ff;
+  background: rgba(74, 158, 255, 0.12);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pansou-enhance-icon:hover {
+  background: rgba(74, 158, 255, 0.25);
+  color: #9cc9ff;
+}
+
+.pansou-enhance-icon.loading {
+  animation: pansou-spin 1s linear infinite;
+}
+
+.pansou-enhance-icon.done {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.12);
+}
+
+@keyframes pansou-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pansou-enhance-edit {
+  display: none;
+  margin-left: 8px;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.main-ui-meta h1:hover + .pansou-enhance-edit,
+.pansou-enhance-edit:hover {
+  display: inline-block;
+}
+
+.pansou-enhance-editor {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.pansou-enhance-editor input {
+  width: 200px;
+  padding: 4px 8px;
+  border: 1px solid #4a9eff;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #eee;
+  font-size: 13px;
+  outline: none;
+}
+
+.pansou-enhance-editor button {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #4a9eff;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+table.bit_list caption.pansou-caption {
+  font-size: 17px;
+  text-align: left;
+}

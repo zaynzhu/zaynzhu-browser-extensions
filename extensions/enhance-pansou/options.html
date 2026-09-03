@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h3>盘搜～观影增强 设置</h3>
+    <p class="hint">观影站地址决定插件在哪个域名激活；盘搜地址为 PanSou 服务根地址</p>
+
+    <div class="form-group">
+      <label for="siteUrlInput">观影站地址</label>
+      <input type="text" id="siteUrlInput" placeholder="https://www.xn--wcv59z.com">
+    </div>
+
+    <div class="form-group">
+      <label for="pansouUrlInput">盘搜服务地址（PanSou）</label>
+      <input type="text" id="pansouUrlInput" placeholder="http://192.168.50.233:4805">
+    </div>
+
+    <div class="form-group">
+      <button id="saveBtn">保存</button>
+      <button id="resetBtn" class="secondary">恢复默认</button>
+      <button id="testBtn" class="secondary">测试盘搜连接</button>
+    </div>
+
+    <div id="testResult" class="status hidden"></div>
+    <div id="status" class="status hidden"></div>
+  </div>
+  <script src="shared.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
