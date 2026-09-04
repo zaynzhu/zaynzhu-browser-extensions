@@ -25,7 +25,7 @@
 | 🔍 | [**XCili Search**](./extensions/xcili-search/) | [xcili.com](https://xcili.com) | 磁力链接搜索，弹窗展示结果，支持一键复制磁力链接 | `stable` |
 | 🔎 | [**Mukaku Search**](./extensions/mukaku-search/) | [web2.mukaku.com](https://web2.mukaku.com) | 不太灵磁力搜索，支持自定义搜索主页（域名经常变更） | `stable` |
 | 🧲 | [**KuakeQ Search**](./extensions/kuakeq-search/) | [kuakeq.com](https://www.kuakeq.com) | 夸克圈磁力搜索，支持自定义搜索主页 | `stable` |
-| 🎩 | [**Jiaofu Search**](./extensions/jiaofu-search/) | [教父.com](https://www.xn--wcv59z.com) | 教父影视资源搜索，支持自定义搜索主页 | `stable` |
+| 🎩 | [**Jiaofu Search**](./extensions/jiaofu-search/) | [教父.com](https://www.xn--wcv59z.com) | 观影站影视资源搜索，支持自定义搜索主页 | `stable` |
 | 💬 | [**SubHD Search**](./extensions/subhd-search/) | [subhd.tv](https://subhd.tv) | SubHD 字幕搜索，支持自定义搜索主页 | `stable` |
 | 📡 | [**TTD Search**](./extensions/tgtodrive-search/) | NAS 自建 TgtoDrive | 在 TgtoDrive 影视探索页自动填词搜索（注入式），支持自定义地址 | `stable` |
 | 🎬 | [**IMDB Search**](./extensions/imdb-search/) | [imdb.com](https://www.imdb.com) | 中文关键词通过 TMDB API 自动翻译后搜索 IMDB | `stable` |
@@ -59,7 +59,7 @@ IMDB 扩展通过 [TMDB API](https://www.themoviedb.org/) 将中文关键词翻�
 
 ### 可配置搜索主页
 
-HDHive、不太灵、夸克圈、教父、SubHD、TTD、盘搜～观影增强、PanSou Search 支持自定义地址。点击对应扩展图标，在弹窗中修改并保存即可。
+HDHive、不太灵、夸克圈、观影、SubHD、TTD、盘搜～观影增强、PanSou Search 支持自定义地址。点击对应扩展图标，在弹窗中修改并保存即可。
 
 TTD 搜索的是 NAS 上自建的 TgtoDrive 管理台"影视探索"页：搜索不走 URL 参数，扩展会定位（或新开）TTD 标签页，自动填入关键词并模拟回车，**需要浏览器已登录 TgtoDrive**。已打开 TTD 时直接在原页面搜索，不再重复开标签页。
 
@@ -88,7 +88,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | 无极磁力 | `extensions/xcili-search/` |
 | 不太灵 | `extensions/mukaku-search/` |
 | 夸克圈 | `extensions/kuakeq-search/` |
-| 教父 | `extensions/jiaofu-search/` |
+| 观影 | `extensions/jiaofu-search/` |
 | SubHD | `extensions/subhd-search/` |
 | TTD | `extensions/tgtodrive-search/` |
 | IMDB | `extensions/imdb-search/` |
@@ -158,7 +158,7 @@ zaynzhu-browser-extensions/
     │   ├── background.js
     │   ├── popup.html / js / css
     │   └── icons/
-    ├── jiaofu-search/            # 教父 — 弹窗 + 域名配置
+    ├── jiaofu-search/            # 观影 — 弹窗 + 域名配置
     │   ├── manifest.json
     │   ├── background.js
     │   ├── search-url.js

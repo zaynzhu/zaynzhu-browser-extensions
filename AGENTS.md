@@ -39,7 +39,7 @@ zaynzhu-browser-extensions/
 │   │   ├── background.js
 │   │   ├── popup.html/js/css
 │   │   └── icons/
-│   ├── jiaofu-search/            # 教父搜索扩展（右键搜索影视资源，支持自定义搜索主页）
+│   ├── jiaofu-search/            # 观影搜索扩展（右键搜索影视资源，支持自定义搜索主页）
 │   │   ├── manifest.json
 │   │   ├── background.js
 │   │   ├── search-url.js
@@ -107,7 +107,7 @@ zaynzhu-browser-extensions/
 | XCili | `https://xcili.com/search?q={keyword}` |
 | 不太灵 | `https://web2.mukaku.com/search?sb={keyword}`（域名可配置，存储在 `chrome.storage`） |
 | KuakeQ | `https://www.kuakeq.com/search-{encoded}-1-1.htm`（编码规则：`encodeURIComponent` 后 `%` → `_`，域名可配置） |
-| 教父 | `https://www.xn--wcv59z.com/search?q={keyword}&type=&mode=1`（域名可配置） |
+| 观影 | `https://www.xn--wcv59z.com/search?q={keyword}&type=&mode=1`（域名可配置） |
 | SubHD | `https://subhd.tv/search/{keyword}`（域名可配置） |
 | IMDB | `https://www.imdb.com/find/?q={keyword}`（中文通过 TMDB API 翻译后搜索） |
 | TTD | 不走 URL 参数（搜索为纯前端状态）：打开配置地址后注入脚本，先点击 `.nav-item[data-target="media-library-section"]` 切到影视探索区块（单页多 section，URL 不变），再向 `#md-library-query` 填词并模拟 Enter；复用已打开的 TTD 标签页（地址可配置，存储在 `chrome.storage`，需浏览器已登录 TgtoDrive） |

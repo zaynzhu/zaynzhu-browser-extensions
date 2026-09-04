@@ -17,7 +17,7 @@ function updateContextMenu() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: MENU_ID,
-      title: '在教父搜索"%s"',
+      title: '在观影搜索"%s"',
       contexts: ['selection'],
     })
   })

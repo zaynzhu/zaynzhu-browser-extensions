@@ -9,7 +9,7 @@ try {
   searchUrl = {}
 }
 
-test('buildSearchUrl 使用默认教父域名生成搜索结果地址', () => {
+test('buildSearchUrl 使用默认观影站域名生成搜索结果地址', () => {
   assert.equal(typeof searchUrl.buildSearchUrl, 'function')
 
   const url = searchUrl.buildSearchUrl('', '无路可退')
