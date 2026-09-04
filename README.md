@@ -25,11 +25,11 @@
 | 🔍 | [**XCili Search**](./extensions/xcili-search/) | [xcili.com](https://xcili.com) | 磁力链接搜索，弹窗展示结果，支持一键复制磁力链接 | `stable` |
 | 🔎 | [**Mukaku Search**](./extensions/mukaku-search/) | [web2.mukaku.com](https://web2.mukaku.com) | 不太灵磁力搜索，支持自定义搜索主页（域名经常变更） | `stable` |
 | 🧲 | [**KuakeQ Search**](./extensions/kuakeq-search/) | [kuakeq.com](https://www.kuakeq.com) | 夸克圈磁力搜索，支持自定义搜索主页 | `stable` |
-| 🎩 | [**Jiaofu Search**](./extensions/jiaofu-search/) | [教父.com](https://www.xn--wcv59z.com) | 观影站影视资源搜索，支持自定义搜索主页 | `stable` |
+| 🎩 | [**Jiaofu Search**](./extensions/jiaofu-search/) | [观影站](https://www.xn--wcv59z.com) | 观影站影视资源搜索，支持自定义搜索主页 | `stable` |
 | 💬 | [**SubHD Search**](./extensions/subhd-search/) | [subhd.tv](https://subhd.tv) | SubHD 字幕搜索，支持自定义搜索主页 | `stable` |
 | 📡 | [**TTD Search**](./extensions/tgtodrive-search/) | NAS 自建 TgtoDrive | 在 TgtoDrive 影视探索页自动填词搜索（注入式），支持自定义地址 | `stable` |
 | 🎬 | [**IMDB Search**](./extensions/imdb-search/) | [imdb.com](https://www.imdb.com) | 中文关键词通过 TMDB API 自动翻译后搜索 IMDB | `stable` |
-| 🧩 | [**盘搜～观影增强**](./extensions/enhance-pansou/) | [教父.com](https://www.xn--wcv59z.com) | 在影片详情页拼接自建 PanSou 盘搜结果（云盘按类型入表 + 磁力入表），双地址可配置 | `stable` |
+| 🧩 | [**盘搜～观影增强**](./extensions/enhance-pansou/) | [观影站](https://www.xn--wcv59z.com) | 在影片详情页拼接自建 PanSou 盘搜结果（云盘按类型入表 + 磁力入表），双地址可配置 | `stable` |
 | 🔮 | [**PanSou Search**](./extensions/pansou-search/) | 自建 PanSou 盘搜 | 右键选中文字在盘搜中搜索（注入式填词），支持弹窗手动搜索与自定义地址 | `stable` |
 
 ---
@@ -65,7 +65,7 @@ TTD 搜索的是 NAS 上自建的 TgtoDrive 管理台"影视探索"页：搜索�
 
 PanSou Search 右键选中文字即可在自建盘搜（PanSou）中搜索：盘搜前端不读 URL 参数，扩展会定位（或新开）盘搜标签页，自动填入关键词并模拟回车；也支持点击扩展图标手动输入关键词搜索。
 
-盘搜～观影增强 在观影站（默认教父.com）影片详情页标题旁注入盘搜按钮：点击后调用自建 [PanSou](https://github.com/fish2018/PanSou) 服务搜索影片主标题，云盘结果（仅夸克/光鸭/115/123 四类）按类型拼进"网盘资源"对应表格（缺的类型自动建表），磁力结果拼进"磁力资源"表（含复制按钮）；与原生结果按链接去重，再次点击强制刷新，标题旁铅笔按钮可修改搜索词。观影站与 PanSou 服务地址均可在弹窗/选项页配置。
+盘搜～观影增强 在观影站（默认镜像 `www.xn--wcv59z.com`，品牌域名会变更）影片详情页标题旁注入盘搜按钮：点击后调用自建 [PanSou](https://github.com/fish2018/PanSou) 服务搜索影片主标题，云盘结果（仅夸克/光鸭/115/123 四类）按类型拼进"网盘资源"对应表格（缺的类型自动建表），磁力结果拼进"磁力资源"表（含复制按钮）；与原生结果按链接去重，再次点击强制刷新，标题旁铅笔按钮可修改搜索词。观影站与 PanSou 服务地址均可在弹窗/选项页配置。
 
 ---
 
