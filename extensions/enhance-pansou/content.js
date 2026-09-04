@@ -112,7 +112,7 @@ function send(msg) {
   })
 }
 
-// ========== 结果分发：云盘 → 网盘表格，磁力 → 磁力表格 ==========
+// ========== 结果分发：云盘 → 网盘镜像表，磁力 → 磁力表 ==========
 function injectAll(data) {
   const merged = data.merged_by_type || {}
   const cloudItems = []
@@ -141,54 +141,92 @@ function injectAll(data) {
 }
 
 // ---------- 网盘资源 tab ----------
+// 重要：网盘资源区的表格由 Vue 管理（容器 #pan，子筛选点击时 Vue 按索引重排/重建表格）。
+// 向 #pan 内插行或插表会破坏 Vue 的列表 diff——表现为点"光鸭网盘"筛选显示的是别的类型。
+// 因此盘搜结果全部放在 #pan 之外（pan 后面的兄弟位置），不碰原生 DOM；
+// 用 MutationObserver 监听 #pan 变化，跟随原生子筛选同步镜像区的显隐。
 function injectCloudItems(items) {
-  const ptList = document.querySelector('.pt-list ul')
-  const tables = collectCloudTables()
+  const pan = document.getElementById('pan')
 
-  // 按类型分组，逐类去重后拼进对应表格；页面上没有的类型新建表格
+  if (!pan) {
+    return
+  }
+
+  // 按类型分组（PanSou 结果内部已按 URL 合并，无需二次去重）
   const byType = new Map()
 
   for (const item of items) {
     const typeName = CLOUD_TYPE_NAMES[item.panType]
-    const table = tables.find((t) => t.name === typeName)
 
-    if (table) {
-      const existingUrls = new Set(
-        [...table.table.querySelectorAll('tbody tr a[href]')].map((a) => a.href)
-      )
-
-      if (!existingUrls.has(item.url)) {
-        table.table.querySelector('tbody').appendChild(buildCloudRow(item, typeName))
-        bumpBadge(ptList, typeName)
-        bumpBadge(null, '全部')
-      }
-    } else {
-      if (!byType.has(typeName)) {
-        byType.set(typeName, [])
-      }
-      byType.get(typeName).push(item)
+    if (!byType.has(typeName)) {
+      byType.set(typeName, [])
     }
+    byType.get(typeName).push(item)
   }
+
+  // 与原生结果去重：原生表中已有的链接不再出现在盘搜镜像区
+  const nativeUrls = new Set(
+    [...pan.querySelectorAll('table.bit_list tbody tr a[href]')].map((a) => a.href)
+  )
 
   for (const [typeName, typeItems] of byType) {
-    createCloudTable(typeName, typeItems, ptList)
-  }
-}
+    const filtered = typeItems.filter((item) => !nativeUrls.has(item.url))
 
-function collectCloudTables() {
-  // 网盘资源 tab：每类一张表，类型名在表格的 <caption> 里
-  const result = []
-
-  for (const table of document.querySelectorAll('table.bit_list')) {
-    const caption = table.querySelector('caption')
-    const name = caption ? caption.innerText.trim() : null
-
-    if (name && name.length < 20) {
-      result.push({ name, table })
+    if (filtered.length > 0) {
+      createMirrorTable(typeName, filtered, pan)
     }
   }
 
-  return result
+  watchPan(pan)
+  syncMirrorVisibility()
+}
+
+function createMirrorTable(typeName, items, pan) {
+  const table = document.createElement('table')
+  table.className = 'bit_list'
+  table.setAttribute('width', '100%')
+  table.setAttribute('border', '0')
+  table.setAttribute('cellpadding', '0')
+  table.setAttribute('cellspacing', '0')
+  table.setAttribute('data-pansou-table', '1')
+  table.setAttribute('data-pansou-type', typeName)
+  table.innerHTML = `
+    <caption class="pansou-caption">${typeName}</caption>
+    <tbody>
+      <tr style="background: 0px 0px;">
+        <th width="820px" align="left">名称</th>
+        <th width="80px" align="center">提取码</th>
+        <th width="140px" align="center">发布者</th>
+        <th width="80px" align="center">更新时间</th>
+      </tr>
+    </tbody>`
+
+  const tbody = table.querySelector('tbody')
+
+  for (const item of items) {
+    tbody.appendChild(buildCloudRow(item, typeName))
+  }
+
+  // 磁力表（若存在）之后的区域是磁力 tab 的渲染位，网盘镜像区插在 #pan 之后、磁力表之前
+  const magnetTable = findMagnetTable()
+  const anchor = magnetTable || pan
+  anchor.parentElement.insertBefore(table, magnetTable ? anchor : pan.nextSibling)
+
+  // 子筛选区追加"类型 + 徽标"，点击切到全部态即可看到盘搜镜像区
+  const ptList = document.querySelector('.pt-list ul')
+
+  if (ptList && !ptList.querySelector(`li[data-pansou-li="${typeName}"]`)) {
+    const li = document.createElement('li')
+    li.setAttribute('data-pansou-li', typeName)
+    li.innerHTML = `${typeName} <i class="badge">${items.length}</i>`
+    li.addEventListener('click', () => syncMirrorVisibility(typeName))
+    ptList.appendChild(li)
+  } else if (ptList) {
+    const badge = ptList.querySelector(`li[data-pansou-li="${typeName}"] .badge`)
+    if (badge) {
+      badge.textContent = String(Number(badge.textContent || '0') + items.length)
+    }
+  }
 }
 
 function buildCloudRow(item, typeName) {
@@ -221,41 +259,48 @@ function buildCloudRow(item, typeName) {
   return tr
 }
 
-function createCloudTable(typeName, items, ptList) {
-  // 页面没有该类型的表格：新建同款表（caption 为类型名），追加在最后一张云盘表后面
-  const lastTable = [...document.querySelectorAll('table.bit_list')].pop()
-  const table = document.createElement('table')
-  table.className = 'bit_list'
-  table.setAttribute('width', '100%')
-  table.setAttribute('border', '0')
-  table.setAttribute('cellpadding', '0')
-  table.setAttribute('cellspacing', '0')
-  table.setAttribute('data-pansou-table', '1')
-  table.innerHTML = `
-    <caption class="pansou-caption">${typeName}</caption>
-    <tbody>
-      <tr style="background: 0px 0px;">
-        <th width="820px" align="left">名称</th>
-        <th width="80px" align="center">提取码</th>
-        <th width="140px" align="center">发布者</th>
-        <th width="80px" align="center">更新时间</th>
-      </tr>
-    </tbody>`
+// 跟随原生显隐：网盘 tab 隐藏（磁力 tab 活跃）时镜像区整体隐藏；
+// 全部态显示全部镜像表，单类态只显示对应类型的镜像表
+function syncMirrorVisibility(forceType) {
+  const pan = document.getElementById('pan')
+  const panVisible = pan && pan.style.display !== 'none'
 
-  const tbody = table.querySelector('tbody')
+  const active = pan
+    ? [...pan.querySelectorAll('table.bit_list')].map((t) =>
+        t.querySelector('caption') ? t.querySelector('caption').innerText.trim() : null
+      )
+    : []
 
-  for (const item of items) {
-    tbody.appendChild(buildCloudRow(item, typeName))
+  const isAll = active.length > 1 || document.querySelector('.pt-list li.on')?.innerText.includes('全部')
+  const current = isAll ? null : active[0] || forceType || null
+
+  document.querySelectorAll('table[data-pansou-table]').forEach((table) => {
+    const type = table.getAttribute('data-pansou-type')
+
+    if (!panVisible) {
+      table.style.display = 'none'
+      return
+    }
+
+    if (forceType && forceType !== '全部') {
+      table.style.display = type === forceType ? '' : 'none'
+      return
+    }
+
+    table.style.display = !current || type === current ? '' : 'none'
+  })
+}
+
+let panObserver = null
+
+function watchPan(pan) {
+  if (panObserver) {
+    return
   }
 
-  lastTable.parentElement.insertBefore(table, lastTable.nextSibling)
-
-  if (ptList) {
-    const li = document.createElement('li')
-    li.setAttribute('data-pansou-li', '1')
-    li.innerHTML = `${typeName} <i class="badge">${items.length}</i>`
-    ptList.appendChild(li)
-  }
+  // childList 跟随子筛选重建；attributes 跟随磁力/网盘 tab 切换（Vue 直接改 #pan 的 style.display）
+  panObserver = new MutationObserver(() => syncMirrorVisibility())
+  panObserver.observe(pan, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] })
 }
 
 // ---------- 磁力资源 tab ----------
@@ -391,16 +436,14 @@ function applyKeyword(keyword) {
 }
 
 function removeAllInjected() {
-  // 撤掉注入行（标记了 data-pansou）和新建的整表，恢复原生状态
-  document.querySelectorAll('tr[data-pansou]').forEach((el) => el.remove())
-  document.querySelectorAll('table.bit_list caption').forEach((caption) => {
-    const table = caption.closest('table')
+  // 移除盘搜镜像表与子筛选项，恢复原生状态
+  document.querySelectorAll('table[data-pansou-table]').forEach((el) => el.remove())
+  document.querySelectorAll('li[data-pansou-li]').forEach((el) => el.remove())
 
-    if (table.getAttribute('data-pansou-table') === '1') {
-      table.remove()
-    }
-  })
-  document.querySelectorAll('.pt-list li[data-pansou-li]').forEach((el) => el.remove())
+  if (panObserver) {
+    panObserver.disconnect()
+    panObserver = null
+  }
 }
 
 // ========== 工具 ==========
@@ -433,23 +476,6 @@ function formatDateTime(iso) {
   }
 
   return `${date.getMonth() + 1}月${date.getDate()}日`
-}
-
-function bumpBadge(ptList, typeName) {
-  // 更新 .pt-list 中对应类型的计数徽标
-  const items = ptList ? [...ptList.querySelectorAll('li')] : []
-
-  for (const li of items) {
-    const label = li.childNodes[0] && li.childNodes[0].textContent.trim()
-
-    if (label === typeName) {
-      const badge = li.querySelector('.badge')
-
-      if (badge) {
-        badge.textContent = String(Number(badge.textContent || '0') + 1)
-      }
-    }
-  }
 }
 
 init()
