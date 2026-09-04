@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h3>JuYing 聚影搜索</h3>
+    <p class="hint">输入关键词在聚影中搜索</p>
+    <div class="form-row search-row">
+      <input type="text" id="keywordInput" placeholder="影视、资源关键词...">
+      <button id="searchAggregateBtn" title="聚合搜索网盘资源">网盘</button>
+      <button id="searchSiteBtn" class="secondary" title="站内搜索影片">站内</button>
+    </div>
+    <div id="status" class="status hidden"></div>
+
+    <div class="divider"></div>
+
+    <div class="form-group">
+      <label>聚影地址</label>
+      <div class="form-row">
+        <input type="text" id="baseUrlInput" placeholder="https://www.jying.top">
+        <button id="saveBtn" class="secondary">保存</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="resetBtn" class="link-btn">恢复默认地址</button>
+    </div>
+  </div>
+  <script src="search-url.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
