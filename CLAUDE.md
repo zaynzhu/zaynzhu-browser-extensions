@@ -71,6 +71,12 @@ zaynzhu-browser-extensions/
 │       ├── popup.html/js/css
 │       ├── options.html/js/css
 │       └── icons/
+│   └── pansou-search/           # PanSou 盘搜扩展（右键/弹窗注入式搜索盘搜，支持自定义地址）
+│       ├── manifest.json
+│       ├── background.js
+│       ├── search-url.js
+│       ├── popup.html/js/css
+│       └── icons/
 ├── CLAUDE.md
 ├── README.md
 └── .gitignore
@@ -80,7 +86,7 @@ zaynzhu-browser-extensions/
 
 - Chrome Manifest V3
 - Service Worker（后台运行）
-- 简单搜索扩展仅申请 `contextMenus` 权限；hdhive-search 额外申请 `storage`；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`；kuakeq-search 额外申请 `storage`；jiaofu-search 额外申请 `storage`；subhd-search 额外申请 `storage`；imdb-search 申请 `storage`；tgtodrive-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（目标为自建 NAS，地址可配置无法预先限定）；enhance-pansou 申请 `storage` 和 `scripting`（content script 注入详情页），host 权限 `<all_urls>`（观影站与盘搜地址均可配置）
+- 简单搜索扩展仅申请 `contextMenus` 权限；hdhive-search 额外申请 `storage`；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`；kuakeq-search 额外申请 `storage`；jiaofu-search 额外申请 `storage`；subhd-search 额外申请 `storage`；imdb-search 申请 `storage`；tgtodrive-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（目标为自建 NAS，地址可配置无法预先限定）；enhance-pansou 申请 `storage` 和 `scripting`（content script 注入详情页），host 权限 `<all_urls>`（观影站与盘搜地址均可配置）；pansou-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（盘搜地址可配置）
 - 零依赖，纯原生 JS
 
 ## 开发约定
@@ -106,6 +112,7 @@ zaynzhu-browser-extensions/
 | IMDB | `https://www.imdb.com/find/?q={keyword}`（中文通过 TMDB API 翻译后搜索） |
 | TTD | 不走 URL 参数（搜索为纯前端状态）：打开配置地址后注入脚本，先点击 `.nav-item[data-target="media-library-section"]` 切到影视探索区块（单页多 section，URL 不变），再向 `#md-library-query` 填词并模拟 Enter；复用已打开的 TTD 标签页（地址可配置，存储在 `chrome.storage`，需浏览器已登录 TgtoDrive） |
 | 盘搜～观影增强 | 不跳转：影片详情页（如 `/tv/7yjx`）标题旁注入盘搜按钮，点击后 background 调 `GET {pansou}/api/search?kw={主标题}&res=merge`；仅取夸克/光鸭/115/123 四类云盘（`merged_by_type`）按类型拼进"网盘资源"对应 `bit_list` 表（类型名在各表的 `<caption>`，缺表则新建）+ 磁力/ed2k 拼进"磁力资源"表（名称列 `盘搜～{note}` + 复制按钮）；按链接 URL 与原生行去重，注入行标记 `data-pansou`；再次点击图标强制刷新（`refresh=1`），铅笔按钮可改词重搜；主标题从 h1 提取（去季/部标记与年份）；观影站与盘搜地址均可配置（存储在 `chrome.storage`） |
+| PanSou Search | 不走 URL 参数（前端不读 query，搜索为纯前端状态）：打开配置地址后注入脚本，向 `input[placeholder^="搜索资源"]` 填词（native setter + input 事件）并模拟 Enter；复用已打开的盘搜标签页（地址可配置，存储在 `chrome.storage`，裸主机名默认补 `http://`）；popup 支持手动输入关键词搜索，复用同一条注入链路 |
 
 ## 发布流程
 

@@ -7,7 +7,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/zaynzhu/zaynzhu-browser-extensions?style=flat&logo=github&color=yellow&label=Stars)](https://github.com/zaynzhu/zaynzhu-browser-extensions/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/zaynzhu/zaynzhu-browser-extensions?style=flat&logo=github&color=purple&label=Forks)](https://github.com/zaynzhu/zaynzhu-browser-extensions/network)
 [![Last Commit](https://img.shields.io/github/last-commit/zaynzhu/zaynzhu-browser-extensions?logo=github&label=Last%20Commit)](https://github.com/zaynzhu/zaynzhu-browser-extensions/commits/main)
-[![Extensions](https://img.shields.io/badge/Extensions-11-6366f1?style=flat&logo=googlechrome&logoColor=white)](./extensions/)
+[![Extensions](https://img.shields.io/badge/Extensions-12-6366f1?style=flat&logo=googlechrome&logoColor=white)](./extensions/)
 [![Manifest](https://img.shields.io/badge/Manifest-V3-4EAA25?style=flat&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![License](https://img.shields.io/badge/License-MIT-0ea5e9?style=flat&logo=opensourceinitiative&logoColor=white)](./LICENSE)
 
@@ -30,6 +30,7 @@
 | 📡 | [**TTD Search**](./extensions/tgtodrive-search/) | NAS 自建 TgtoDrive | 在 TgtoDrive 影视探索页自动填词搜索（注入式），支持自定义地址 | `stable` |
 | 🎬 | [**IMDB Search**](./extensions/imdb-search/) | [imdb.com](https://www.imdb.com) | 中文关键词通过 TMDB API 自动翻译后搜索 IMDB | `stable` |
 | 🧩 | [**盘搜～观影增强**](./extensions/enhance-pansou/) | [教父.com](https://www.xn--wcv59z.com) | 在影片详情页拼接自建 PanSou 盘搜结果（云盘按类型入表 + 磁力入表），双地址可配置 | `stable` |
+| 🔮 | [**PanSou Search**](./extensions/pansou-search/) | 自建 PanSou 盘搜 | 右键选中文字在盘搜中搜索（注入式填词），支持弹窗手动搜索与自定义地址 | `stable` |
 
 ---
 
@@ -58,9 +59,11 @@ IMDB 扩展通过 [TMDB API](https://www.themoviedb.org/) 将中文关键词翻�
 
 ### 可配置搜索主页
 
-HDHive、不太灵、夸克圈、教父、SubHD、TTD、盘搜～观影增强 支持自定义地址。点击对应扩展图标，在弹窗中修改并保存即可。
+HDHive、不太灵、夸克圈、教父、SubHD、TTD、盘搜～观影增强、PanSou Search 支持自定义地址。点击对应扩展图标，在弹窗中修改并保存即可。
 
 TTD 搜索的是 NAS 上自建的 TgtoDrive 管理台"影视探索"页：搜索不走 URL 参数，扩展会定位（或新开）TTD 标签页，自动填入关键词并模拟回车，**需要浏览器已登录 TgtoDrive**。已打开 TTD 时直接在原页面搜索，不再重复开标签页。
+
+PanSou Search 右键选中文字即可在自建盘搜（PanSou）中搜索：盘搜前端不读 URL 参数，扩展会定位（或新开）盘搜标签页，自动填入关键词并模拟回车；也支持点击扩展图标手动输入关键词搜索。
 
 盘搜～观影增强 在观影站（默认教父.com）影片详情页标题旁注入盘搜按钮：点击后调用自建 [PanSou](https://github.com/fish2018/PanSou) 服务搜索影片主标题，云盘结果（仅夸克/光鸭/115/123 四类）按类型拼进"网盘资源"对应表格（缺的类型自动建表），磁力结果拼进"磁力资源"表（含复制按钮）；与原生结果按链接去重，再次点击强制刷新，标题旁铅笔按钮可修改搜索词。观影站与 PanSou 服务地址均可在弹窗/选项页配置。
 
@@ -90,8 +93,9 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | TTD | `extensions/tgtodrive-search/` |
 | IMDB | `extensions/imdb-search/` |
 | 盘搜～观影增强 | `extensions/enhance-pansou/` |
+| PanSou Search | `extensions/pansou-search/` |
 
-> 十一个扩展互相独立，可按需安装，也可以同时安装全部。
+> 十二个扩展互相独立，可按需安装，也可以同时安装全部。
 
 ---
 
@@ -110,6 +114,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | TTD | ✅ | ✅ | - | 弹窗 + 地址配置存储 + 注入填词（`scripting`，host `<all_urls>`） |
 | IMDB | ✅ | ✅ | - | 弹窗 + API Key 配置存储 |
 | 盘搜～观影增强 | - | ✅ | - | 详情页注入（`scripting` + content script，host `<all_urls>`）+ 双地址配置存储 |
+| PanSou Search | ✅ | ✅ | - | 弹窗 + 地址配置存储 + 注入填词（`scripting`，host `<all_urls>`） |
 
 所有扩展均不采集任何用户数据。
 
@@ -177,13 +182,19 @@ zaynzhu-browser-extensions/
     │   ├── popup.html / js / css
     │   ├── options.html / js / css
     │   └── icons/
-    └── enhance-pansou/          # 盘搜～观影增强 — 详情页注入 + 双地址配置
+    ├── enhance-pansou/          # 盘搜～观影增强 — 详情页注入 + 双地址配置
+    │   ├── manifest.json
+    │   ├── background.js        # PanSou API 客户端 + 缓存 + 频率限制
+    │   ├── shared.js            # 地址归一化 + 标题提取（popup/options/content 共用）
+    │   ├── content.js / css     # 详情页图标 + 表格拼接
+    │   ├── popup.html / js / css
+    │   ├── options.html / js / css
+    │   └── icons/
+    └── pansou-search/           # PanSou 盘搜 — 右键/弹窗注入式搜索 + 地址配置
         ├── manifest.json
-        ├── background.js        # PanSou API 客户端 + 缓存 + 频率限制
-        ├── shared.js            # 地址归一化 + 标题提取（popup/options/content 共用）
-        ├── content.js / css     # 详情页图标 + 表格拼接
+        ├── background.js
+        ├── search-url.js
         ├── popup.html / js / css
-        ├── options.html / js / css
         └── icons/
 ```
 
@@ -204,6 +215,7 @@ zaynzhu-browser-extensions/
 | TTD | 不走 URL 参数：打开配置地址 → 注入脚本填入 `#md-library-query` 并模拟 Enter（地址可配置，需已登录） |
 | IMDB | `imdb.com/find/?q={keyword}`（中文通过 TMDB 翻译后搜索） |
 | 盘搜～观影增强 | 不跳转：详情页注入 `GET {pansou}/api/search?kw={主标题}&res=merge`，结果拼进当前页资源表格（双地址可配置） |
+| PanSou Search | 不走 URL 参数（前端不读 query）：打开配置地址后注入脚本，向 `input[placeholder^="搜索资源"]` 填词并模拟 Enter；复用已打开的盘搜标签页（地址可配置，存储在 `chrome.storage`） |
 
 ---
 
