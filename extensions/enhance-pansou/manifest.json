@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "盘搜～观影增强",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "在观影站影片详情页拼接 PanSou 盘搜结果：云盘按类型拼入对应表格，磁力拼入磁力资源表",
   "permissions": ["storage", "scripting"],
   "host_permissions": ["<all_urls>"],

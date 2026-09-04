@@ -85,8 +85,20 @@ async function searchAndInject(keyword, refresh) {
 
   try {
     const data = await send({ type: 'pansou-search', keyword, refresh })
+
+    // 重建前先撤掉上一轮的镜像表/徽标，避免强制刷新时重复
+    removeAllInjected()
     injectAll(data)
     loaded = true
+
+    // 注入由用户点击触发，滚到结果区让结果可见（无云盘镜像但有磁力行时滚到磁力表首条盘搜行）
+    const firstMirror = document.querySelector('table[data-pansou-table]')
+    const target = firstMirror || document.querySelector('tr[data-pansou]')
+
+    if (target) {
+      scrollToElement(target)
+    }
+
     icon.classList.remove('loading')
     icon.classList.add('done')
     icon.title = `盘搜：已注入，再点强制刷新`
@@ -95,6 +107,31 @@ async function searchAndInject(keyword, refresh) {
     icon.title = `盘搜失败：${error.message}，点击重试`
   } finally {
     loading = false
+  }
+}
+
+function scrollToMirror(typeName) {
+  const target = typeName
+    ? document.querySelector(`table[data-pansou-type="${typeName}"]`)
+    : document.querySelector('table[data-pansou-table]')
+
+  if (target) {
+    scrollToElement(target)
+  }
+}
+
+// 站点 body overflow:auto、Vue 频繁重渲染会打断 scrollIntoView 的 smooth 滚动：
+// 用 window.scrollTo 瞬时定位，并在短暂延迟后重试一次（等 Vue 渲染稳定）
+function scrollToElement(target, retry = true) {
+  const rect = target.getBoundingClientRect()
+
+  if (rect.top < 0 || rect.top > window.innerHeight - 80) {
+    const top = rect.top + window.scrollY - 60
+    window.scrollTo({ top, behavior: 'auto' })
+  }
+
+  if (retry) {
+    setTimeout(() => scrollToElement(target, false), 150)
   }
 }
 
@@ -212,14 +249,25 @@ function createMirrorTable(typeName, items, pan) {
   const anchor = magnetTable || pan
   anchor.parentElement.insertBefore(table, magnetTable ? anchor : pan.nextSibling)
 
-  // 子筛选区追加"类型 + 徽标"，点击切到全部态即可看到盘搜镜像区
+  // 子筛选区追加"类型 + 徽标"：点击 = 回到全部态并滚动到该类型的盘搜镜像表
   const ptList = document.querySelector('.pt-list ul')
 
   if (ptList && !ptList.querySelector(`li[data-pansou-li="${typeName}"]`)) {
     const li = document.createElement('li')
     li.setAttribute('data-pansou-li', typeName)
     li.innerHTML = `${typeName} <i class="badge">${items.length}</i>`
-    li.addEventListener('click', () => syncMirrorVisibility(typeName))
+    li.addEventListener('click', () => {
+      const nativeAll = [...document.querySelectorAll('.pt-list ul li')].find(
+        (el) => !el.hasAttribute('data-pansou-li') && el.innerText.includes('全部')
+      )
+
+      if (nativeAll && !nativeAll.classList.contains('on')) {
+        nativeAll.click()
+      }
+
+      syncMirrorVisibility()
+      scrollToMirror(typeName)
+    })
     ptList.appendChild(li)
   } else if (ptList) {
     const badge = ptList.querySelector(`li[data-pansou-li="${typeName}"] .badge`)
