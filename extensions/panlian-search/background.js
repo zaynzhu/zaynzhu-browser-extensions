@@ -1,6 +1,6 @@
 importScripts('search-url.js')
 
-const MENU_ID = 'search-pinglian'
+const MENU_ID = 'search-panlian'
 
 // ========== 右键菜单 ==========
 chrome.runtime.onInstalled.addListener(() => {

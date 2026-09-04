@@ -1,6 +1,6 @@
 (function () {
   const DEFAULT_BASE_URL = 'https://pinglian.lol'
-  const STORAGE_KEY = 'pinglianBaseUrl'
+  const STORAGE_KEY = 'panlianBaseUrl'
 
   function normalizeBaseUrl(baseUrl) {
     let url = (baseUrl || DEFAULT_BASE_URL).trim().replace(/\/+$/, '')

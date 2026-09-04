@@ -33,7 +33,7 @@
 | 🔮 | [**PanSou Search**](./extensions/pansou-search/) | 自建 PanSou 盘搜 | 右键选中文字在盘搜中搜索（注入式填词），支持弹窗手动搜索与自定义地址 | `stable` |
 | 🎞️ | [**JuYing Search**](./extensions/juying-search/) | [jying.top](https://www.jying.top) | 聚影站内影片 + 聚合网盘双入口搜索（注入式填词），支持弹窗手动搜索与自定义地址 | `stable` |
 | 🀄 | [**DianYing Search**](./extensions/dianying-search/) | [dian115.com](https://m.dian115.com) | 癫影电影/剧集/动漫三分类搜索，直开搜索 URL，支持弹窗手动搜索与自定义主页 | `stable` |
-| 🟣 | [**PanLian Search**](./extensions/pinglian-search/) | [pinglian.lol](https://pinglian.lol) | 盘链网盘资源搜索，直开搜索 URL，支持弹窗手动搜索与自定义主页 | `stable` |
+| 🟣 | [**PanLian Search**](./extensions/panlian-search/) | [pinglian.lol](https://pinglian.lol) | 盘链网盘资源搜索，直开搜索 URL，支持弹窗手动搜索与自定义主页 | `stable` |
 
 ---
 
@@ -105,7 +105,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | PanSou Search | `extensions/pansou-search/` |
 | JuYing Search | `extensions/juying-search/` |
 | DianYing Search | `extensions/dianying-search/` |
-| PanLian Search | `extensions/pinglian-search/` |
+| PanLian Search | `extensions/panlian-search/` |
 
 > 十五个扩展互相独立，可按需安装，也可以同时安装全部。
 
@@ -223,7 +223,7 @@ zaynzhu-browser-extensions/
     │   ├── search-url.js
     │   ├── popup.html / js / css
     │   └── icons/
-    └── pinglian-search/         # PanLian 盘链 — 直开搜索 URL + 地址配置
+    └── panlian-search/         # PanLian 盘链 — 直开搜索 URL + 地址配置
         ├── manifest.json
         ├── background.js
         ├── search-url.js

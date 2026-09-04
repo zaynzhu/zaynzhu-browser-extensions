@@ -1,4 +1,4 @@
-const pinglian = globalThis.PanLianSearch
+const panlian = globalThis.PanLianSearch
 const keywordInput = document.getElementById('keywordInput')
 const searchBtn = document.getElementById('searchBtn')
 const baseUrlInput = document.getElementById('baseUrlInput')
@@ -7,8 +7,8 @@ const resetBtn = document.getElementById('resetBtn')
 const statusEl = document.getElementById('status')
 
 // 加载当前设置
-chrome.storage.local.get(pinglian.STORAGE_KEY, (data) => {
-  baseUrlInput.value = data[pinglian.STORAGE_KEY] || pinglian.DEFAULT_BASE_URL
+chrome.storage.local.get(panlian.STORAGE_KEY, (data) => {
+  baseUrlInput.value = data[panlian.STORAGE_KEY] || panlian.DEFAULT_BASE_URL
 })
 
 // 手动输入搜索：直接拼搜索 URL 新开标签页，与右键菜单同一条链路
@@ -20,9 +20,9 @@ function doSearch() {
     return
   }
 
-  chrome.storage.local.get(pinglian.STORAGE_KEY, (data) => {
-    const baseUrl = data[pinglian.STORAGE_KEY] || pinglian.DEFAULT_BASE_URL
-    const url = pinglian.buildSearchUrl(baseUrl, keyword)
+  chrome.storage.local.get(panlian.STORAGE_KEY, (data) => {
+    const baseUrl = data[panlian.STORAGE_KEY] || panlian.DEFAULT_BASE_URL
+    const url = panlian.buildSearchUrl(baseUrl, keyword)
 
     chrome.tabs.create({ url })
     window.close()
@@ -39,18 +39,18 @@ keywordInput.addEventListener('keydown', (event) => {
 
 // 保存地址
 saveBtn.addEventListener('click', () => {
-  const url = pinglian.normalizeBaseUrl(baseUrlInput.value)
+  const url = panlian.normalizeBaseUrl(baseUrlInput.value)
   baseUrlInput.value = url
 
-  chrome.storage.local.set({ [pinglian.STORAGE_KEY]: url }, () => {
+  chrome.storage.local.set({ [panlian.STORAGE_KEY]: url }, () => {
     showStatus('已保存', 'success')
   })
 })
 
 // 恢复默认
 resetBtn.addEventListener('click', () => {
-  baseUrlInput.value = pinglian.DEFAULT_BASE_URL
-  chrome.storage.local.set({ [pinglian.STORAGE_KEY]: pinglian.DEFAULT_BASE_URL }, () => {
+  baseUrlInput.value = panlian.DEFAULT_BASE_URL
+  chrome.storage.local.set({ [panlian.STORAGE_KEY]: panlian.DEFAULT_BASE_URL }, () => {
     showStatus('已恢复默认', 'success')
   })
 })
