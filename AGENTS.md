@@ -57,13 +57,13 @@ zaynzhu-browser-extensions/
 │   │   ├── search-url.js
 │   │   ├── popup.html/js/css
 │   │   └── icons/
-│   └── imdb-search/             # IMDB 搜索扩展（右键搜索，通过 TMDB API 翻译中文）
+│   ├── imdb-search/             # IMDB 搜索扩展（右键搜索，通过 TMDB API 翻译中文）
 │       ├── manifest.json
 │       ├── background.js
 │       ├── popup.html/js/css
 │       ├── options.html/js/css
 │       └── icons/
-│   └── enhance-pansou/          # 盘搜～观影增强扩展（影片详情页拼接 PanSou 盘搜结果，双地址可配置）
+│   ├── enhance-pansou/          # 盘搜～观影增强扩展（影片详情页拼接 PanSou 盘搜结果，双地址可配置）
 │       ├── manifest.json
 │       ├── background.js        # PanSou API 客户端 + 缓存 + 频率限制
 │       ├── shared.js            # 地址归一化 + 标题提取（popup/options/content 共用）
@@ -71,19 +71,19 @@ zaynzhu-browser-extensions/
 │       ├── popup.html/js/css
 │       ├── options.html/js/css
 │       └── icons/
-│   └── pansou-search/           # PanSou 盘搜扩展（右键/弹窗注入式搜索盘搜，支持自定义地址）
+│   ├── pansou-search/           # PanSou 盘搜扩展（右键/弹窗注入式搜索盘搜，支持自定义地址）
 │       ├── manifest.json
 │       ├── background.js
 │       ├── search-url.js
 │       ├── popup.html/js/css
 │       └── icons/
-│   └── juying-search/           # JuYing 聚影搜索扩展（右键/弹窗注入式，站内影片 + 聚合网盘双入口，支持自定义地址）
+│   ├── juying-search/           # JuYing 聚影搜索扩展（右键/弹窗注入式，站内影片 + 聚合网盘双入口，支持自定义地址）
 │       ├── manifest.json
 │       ├── background.js
 │       ├── search-url.js
 │       ├── popup.html/js/css
 │       └── icons/
-│   └── dianying-search/         # DianYing 癫影搜索扩展（右键/弹窗直开搜索 URL，电影/剧集/动漫三分类，支持自定义搜索主页）
+│   ├── dianying-search/         # DianYing 癫影搜索扩展（右键/弹窗直开搜索 URL，电影/剧集/动漫三分类，支持自定义搜索主页）
 │       ├── manifest.json
 │       ├── background.js
 │       ├── search-url.js
