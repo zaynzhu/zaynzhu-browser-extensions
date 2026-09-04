@@ -44,7 +44,7 @@
 
 ### 手动输入搜索
 
-XCili、IMDB 支持点击扩展图标手动输入关键词；HDHive、Mukaku、KuakeQ、Jiaofu、SubHD 支持在弹窗中配置搜索主页地址。
+XCili、IMDB 支持点击扩展图标手动输入关键词；HDHive、Mukaku、KuakeQ、Jiaofu（观影）、SubHD 支持在弹窗中配置搜索主页地址。
 
 ### IMDB 翻译功能
 
@@ -59,7 +59,7 @@ IMDB 扩展通过 [TMDB API](https://www.themoviedb.org/) 将中文关键词翻�
 
 ### 可配置搜索主页
 
-HDHive、不太灵、夸克圈、观影、SubHD、TTD、盘搜～观影增强、PanSou Search 支持自定义地址。点击对应扩展图标，在弹窗中修改并保存即可。
+HDHive、不太灵、夸克圈、观影（Jiaofu Search）、SubHD、TTD、盘搜～观影增强、PanSou Search 支持自定义地址。点击对应扩展图标，在弹窗中修改并保存即可。
 
 TTD 搜索的是 NAS 上自建的 TgtoDrive 管理台"影视探索"页：搜索不走 URL 参数，扩展会定位（或新开）TTD 标签页，自动填入关键词并模拟回车，**需要浏览器已登录 TgtoDrive**。已打开 TTD 时直接在原页面搜索，不再重复开标签页。
 
@@ -109,7 +109,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 | XCili | ✅ | ✅ | ✅ | 弹窗搜索 + 结果展示 |
 | Mukaku | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | KuakeQ | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
-| Jiaofu | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
+| 观影 | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | SubHD | ✅ | ✅ | - | 弹窗 + 域名配置存储 |
 | TTD | ✅ | ✅ | - | 弹窗 + 地址配置存储 + 注入填词（`scripting`，host `<all_urls>`） |
 | IMDB | ✅ | ✅ | - | 弹窗 + API Key 配置存储 |
@@ -210,7 +210,7 @@ zaynzhu-browser-extensions/
 | XCili | `xcili.com/search?q={keyword}` |
 | 不太灵 | `web2.mukaku.com/search?sb={keyword}`（域名可配置） |
 | KuakeQ | `kuakeq.com/search-{encoded}-1-1.htm`（`encodeURIComponent` 后 `%` → `_`，域名可配置） |
-| Jiaofu | `www.xn--wcv59z.com/search?q={keyword}&type=&mode=1`（域名可配置） |
+| 观影 | `www.xn--wcv59z.com/search?q={keyword}&type=&mode=1`（域名可配置） |
 | SubHD | `subhd.tv/search/{keyword}`（域名可配置） |
 | TTD | 不走 URL 参数：打开配置地址 → 注入脚本填入 `#md-library-query` 并模拟 Enter（地址可配置，需已登录） |
 | IMDB | `imdb.com/find/?q={keyword}`（中文通过 TMDB 翻译后搜索） |
