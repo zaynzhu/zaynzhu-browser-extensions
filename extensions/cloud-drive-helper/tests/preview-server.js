@@ -74,13 +74,17 @@ const server = createServer(async (request, response) => {
     response.setHeader('Content-Type', 'text/html; charset=utf-8')
     response.end(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>合成转存队列验收</title>
       <body style="padding:32px;font-family:system-ui"><h1>合成队列验收</h1><p>此页不调用云盘接口，不包含真实账号或分享链接。</p>
-      <button id="add">添加合成任务</button><button id="finish">完成当前任务</button><input id="unrelated" aria-label="继续操作网页" placeholder="任务期间仍可在这里输入">
+      <button id="add">添加合成任务</button><button id="magnet">添加合成磁力任务</button><button id="finish">完成当前任务</button><input id="unrelated" aria-label="继续操作网页" placeholder="任务期间仍可在这里输入">
       <script type="module">
       import { installTransferPanel } from './transfer-overlay.js'
       window.demoJobs = []
       document.querySelector('#add').onclick = () => {
         const index = window.demoJobs.length + 1
         window.demoJobs.unshift({ jobId: String(index), createdAt: Date.now(), provider: '123', sourceLabel: '合成分享-' + index, targetPath: '根目录 / 合成目录', status: window.demoJobs.some(job => job.status === 'preparing') ? 'queued' : 'preparing', message: '合成任务，仅供界面验收' })
+        installTransferPanel(new URL('/transfer-panel.html?token=synthetic', location.href).href, 'synthetic')
+      }
+      document.querySelector('#magnet').onclick = () => {
+        window.demoJobs.unshift({ jobId: 'magnet-' + crypto.randomUUID(), kind: 'magnet', provider: '115', sourceLabel: '合成磁力', targetPath: '根目录 / 合成目录', status: 'downloading', message: '离线任务已创建，尚未完成', offline: { taskId: 'synthetic' } })
         installTransferPanel(new URL('/transfer-panel.html?token=synthetic', location.href).href, 'synthetic')
       }
       document.querySelector('#finish').onclick = () => {
@@ -94,7 +98,13 @@ const server = createServer(async (request, response) => {
   }
   if (path === '/queue-mock.js') {
     response.setHeader('Content-Type', 'text/javascript')
-    response.end(`globalThis.chrome = { runtime: { sendMessage: async () => ({ ok: true, data: window.parent.demoJobs || [] }), openOptionsPage: async () => {} } }`)
+    response.end(`globalThis.chrome = { runtime: { sendMessage: async message => {
+      if (message.type === 'check-offline') {
+        const job = window.parent.demoJobs?.find(item => item.jobId === message.jobId)
+        if (job) { job.status = 'failed'; job.message = '合成：资源不可用，不重试' }
+      }
+      return { ok: true, data: window.parent.demoJobs || [] }
+    }, openOptionsPage: async () => {} } }`)
     return
   }
   if (path === '/preview-mock.js') {

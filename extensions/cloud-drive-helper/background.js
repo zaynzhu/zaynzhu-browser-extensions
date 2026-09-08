@@ -117,7 +117,7 @@ const handleCachedMessage = createCachedHandler(chrome.storage.local, handleMess
 const transfers = createTransferService(chrome, handleCachedMessage)
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (sender.id === chrome.runtime.id && message.type === 'list-transfers') {
+  if (sender.id === chrome.runtime.id && ['list-transfers', 'check-offline'].includes(message.type)) {
     const panelUrl = chrome.runtime.getURL('transfer-panel.html')
     const read = async () => {
       await ready
@@ -125,8 +125,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const token = grants[sender.tab?.id]
       const trusted = (sender.tab?.url === chrome.runtime.getURL('popup.html') && sender.url === `${panelUrl}?token=config`) || (token && sender.url === `${panelUrl}?token=${token}`)
       if (!trusted) throw new Error('任务面板未授权')
+      if (message.type === 'check-offline') {
+        const pending = commands.then(() => transfers.checkOffline(message.jobId))
+        commands = pending.catch(() => {})
+        await pending
+      }
       const jobs = await transfers.list()
-      const pending = jobs.filter(job => ['queued', 'preparing', 'submitting'].includes(job.status)).length
+      const pending = jobs.filter(job => ['queued', 'preparing', 'submitting', 'downloading'].includes(job.status)).length
       await chrome.action.setBadgeText({ text: pending ? String(pending) : '' })
       return jobs
     }
@@ -150,19 +155,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function registerTransferMenu() {
   await chrome.contextMenus.removeAll()
   chrome.contextMenus.create({ id: 'save-share', title: '转存分享至已选目录', contexts: ['selection', 'link', 'page'] })
+  chrome.contextMenus.create({ id: 'save-magnet', title: '磁力下载到已选目录', contexts: ['selection', 'link'] })
+  for (const [provider, name] of [['115', '115'], ['guangya', '光鸭'], ['123', '123']]) chrome.contextMenus.create({ id: `save-magnet-${provider}`, parentId: 'save-magnet', title: name, contexts: ['selection', 'link'] })
+  await chrome.alarms?.create('magnet-status', { periodInMinutes: 1 })
 }
 chrome.runtime.onInstalled?.addListener(registerTransferMenu)
 chrome.runtime.onStartup?.addListener(registerTransferMenu)
 // 接收提交与执行转存使用不同队列：提交只读本机状态，长任务不阻塞下一次右键。
 let submissions = Promise.resolve()
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
-  if (info.menuItemId !== 'save-share') return
+  const magnetProvider = /^save-magnet-(115|guangya|123)$/.exec(String(info.menuItemId))?.[1]
+  if (info.menuItemId !== 'save-share' && !magnetProvider) return
   const receipt = submissions.then(async () => {
     await ready
-    const jobId = await transfers.create({ linkUrl: info.linkUrl, selectionText: info.selectionText })
+    const jobId = await transfers.create({ linkUrl: info.linkUrl, selectionText: info.selectionText, ...(magnetProvider ? { kind: 'magnet', provider: magnetProvider } : {}) })
     const pending = commands.then(() => transfers.run(jobId))
     commands = pending.catch(() => {})
-    await chrome.action.setBadgeText({ text: String((await transfers.list()).filter(job => ['queued', 'preparing', 'submitting'].includes(job.status)).length) })
+    await chrome.action.setBadgeText({ text: String((await transfers.list()).filter(job => ['queued', 'preparing', 'submitting', 'downloading'].includes(job.status)).length) })
     if (Number.isInteger(tab?.id)) {
       try {
         const state = await chrome.storage.session.get('transferPanelGrants')
@@ -175,9 +184,22 @@ chrome.contextMenus?.onClicked.addListener((info, tab) => {
       }
     }
     pending.finally(async () => {
-      const count = (await transfers.list()).filter(job => ['queued', 'preparing', 'submitting'].includes(job.status)).length
+      const count = (await transfers.list()).filter(job => ['queued', 'preparing', 'submitting', 'downloading'].includes(job.status)).length
       await chrome.action.setBadgeText({ text: count ? String(count) : '' })
     }).catch(() => {})
   })
   submissions = receipt.catch(() => {})
+})
+
+let monitoringOffline = false
+chrome.alarms?.onAlarm.addListener(alarm => {
+  if (alarm.name !== 'magnet-status' || monitoringOffline) return
+  monitoringOffline = true
+  const pending = commands.then(async () => {
+    await ready
+    await transfers.monitorOffline()
+    const count = (await transfers.list()).filter(job => ['queued', 'preparing', 'submitting', 'downloading'].includes(job.status)).length
+    await chrome.action.setBadgeText({ text: count ? String(count) : '' })
+  }).finally(() => { monitoringOffline = false })
+  commands = pending.catch(() => {})
 })

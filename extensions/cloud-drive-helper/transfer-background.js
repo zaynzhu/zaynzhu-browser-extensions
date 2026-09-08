@@ -1,3 +1,5 @@
+import { parseMagnet } from './magnet-link.js'
+import { createMagnetClient } from './magnet-api.js'
 import { parseShareLink } from './share-link.js'
 import { executeShareTransfer } from './share-transfer.js'
 import { RateLimiter } from './guangya-api.js'
@@ -14,7 +16,7 @@ export function buildTransferRule(extensionId, cookie, url) {
   }
 }
 
-export function createTransferService(chromeApi, getState, execute = executeShareTransfer) {
+export function createTransferService(chromeApi, getState, execute = executeShareTransfer, magnetClient = createMagnetClient) {
   const local = chromeApi.storage.local
   const temporary = chromeApi.storage.session
   const active = new Set()
@@ -58,24 +60,48 @@ export function createTransferService(chromeApi, getState, execute = executeShar
     return { session, target, scope }
   }
 
+  const parseInput = info => info.kind === 'magnet' ? parseMagnet(info.linkUrl || info.selectionText || '', info.provider) : parseShareLink(info.linkUrl || info.selectionText || '')
+  const bindingKey = selected => JSON.stringify({ accountId: selected.session.accountId, target: selected.target, scope: selected.scope })
+
+  function clientContext(share, selected) {
+    return {
+      share, ...selected,
+      limiter: new RateLimiter(temporary, share.provider === '115' ? 'pan115LastRequestAt' : share.provider === '123' ? 'pan123LastRequestAt' : 'guangyaLastRequestAt'),
+      with115Cookie: async (url, action) => {
+        await chromeApi.declarativeNetRequest.updateSessionRules({ removeRuleIds: [RULE_ID], addRules: [buildTransferRule(chromeApi.runtime.id, selected.session.cookie, url)] })
+        try { return await action() }
+        finally { await chromeApi.declarativeNetRequest.updateSessionRules({ removeRuleIds: [RULE_ID], addRules: [] }) }
+      },
+    }
+  }
+
+  async function checkOffline(jobId) {
+    const job = (await temporary.get(JOB_KEY))[JOB_KEY]?.[jobId]
+    if (!job?.offline || !['downloading', 'unknown'].includes(job.status)) return
+    try {
+      const selected = await binding(job.provider)
+      if (bindingKey(selected) !== job.offline.bindingKey) throw new Error('账号或目标已变化，停止查询原任务；原云盘任务可能仍在运行')
+      const share = { provider: job.provider, kind: 'magnet', infoHash: job.offline.infoHash }
+      const result = await magnetClient(clientContext(share, selected)).check(job.offline)
+      await update(jobId, result)
+      if (result.status === 'success') await local.remove(`directoryCache-${selected.scope}`)
+    } catch (error) {
+      await update(jobId, { status: 'unknown', message: `离线状态未确认：${error.message}。不会重新提交或切换目录。` })
+    }
+  }
+
   async function run(jobId, info) {
     active.add(jobId)
     let writing = false
     try {
       const snapshot = queued.get(jobId)
       if (!snapshot && !info) return
-      const share = snapshot?.share || parseShareLink(info.linkUrl || info.selectionText || '')
+      const share = snapshot?.share || parseInput(info)
       const selected = snapshot?.selected || await binding(share.provider)
       if (JSON.stringify(await binding(share.provider)) !== JSON.stringify(selected)) throw new Error('排队期间账号或目标目录已变化，请重新提交')
       await update(jobId, { provider: share.provider, targetPath: selected.target.path.map(item => item.name).join(' / '), status: 'preparing', message: '正在准备转存' })
-      const limiter = new RateLimiter(temporary, share.provider === '115' ? 'pan115LastRequestAt' : share.provider === '123' ? 'pan123LastRequestAt' : 'guangyaLastRequestAt')
-      const result = await execute({
-        share, ...selected, limiter,
-        with115Cookie: async (url, action) => {
-          await chromeApi.declarativeNetRequest.updateSessionRules({ removeRuleIds: [RULE_ID], addRules: [buildTransferRule(chromeApi.runtime.id, selected.session.cookie, url)] })
-          try { return await action() }
-          finally { await chromeApi.declarativeNetRequest.updateSessionRules({ removeRuleIds: [RULE_ID], addRules: [] }) }
-        },
+      const context = {
+        ...clientContext(share, selected),
         beforeWrite: async () => {
           const current = await binding(share.provider)
           if (JSON.stringify(current) !== JSON.stringify(selected)) throw new Error('账号或目标目录已变化，未执行转存')
@@ -84,7 +110,14 @@ export function createTransferService(chromeApi, getState, execute = executeShar
           writing = true
         },
         progress: message => update(jobId, { message }),
-      })
+      }
+      if (share.kind === 'magnet') {
+        const ref = await magnetClient(context).submit(context.beforeWrite)
+        await update(jobId, { status: 'downloading', message: '磁力任务已创建，尚未确认下载完成', offline: { ...ref, infoHash: share.infoHash, bindingKey: bindingKey(selected) } })
+        await checkOffline(jobId)
+        return
+      }
+      const result = await execute(context)
       await update(jobId, { status: 'success', message: `转存成功，已在目标目录核实 ${result.count} 个项目` })
       await local.remove(`directoryCache-${selected.scope}`)
     } catch (error) {
@@ -99,10 +132,10 @@ export function createTransferService(chromeApi, getState, execute = executeShar
       active.add(jobId)
       if (info) {
         try {
-          const share = parseShareLink(info.linkUrl || info.selectionText || '')
+          const share = parseInput(info)
           const selected = await binding(share.provider)
           queued.set(jobId, { share, selected })
-          await update(jobId, { provider: share.provider, sourceLabel: share.shareId, targetPath: selected.target.path.map(item => item.name).join(' / ') })
+          await update(jobId, { kind: share.kind || 'share', provider: share.provider, sourceLabel: share.shareId, targetPath: selected.target.path.map(item => item.name).join(' / ') })
         } catch (error) {
           active.delete(jobId)
           await update(jobId, { status: 'failed', message: `提交失败：${error.message}。未执行写入。` })
@@ -111,6 +144,11 @@ export function createTransferService(chromeApi, getState, execute = executeShar
       return jobId
     },
     run,
+    checkOffline,
+    async monitorOffline() {
+      const jobs = (await temporary.get(JOB_KEY))[JOB_KEY] || {}
+      for (const [jobId, job] of Object.entries(jobs)) if (job.status === 'downloading' && job.offline) await checkOffline(jobId)
+    },
     async list() {
       const jobs = (await temporary.get(JOB_KEY))[JOB_KEY] || {}
       return Promise.all(Object.keys(jobs).reverse().map(async jobId => ({ jobId, ...await this.read(jobId) })))
@@ -118,8 +156,9 @@ export function createTransferService(chromeApi, getState, execute = executeShar
     async read(jobId) {
       const job = (await temporary.get(JOB_KEY))[JOB_KEY]?.[jobId]
       if (!job) throw new Error('任务记录不存在或浏览器已重启')
-      if (!active.has(jobId) && ['queued', 'preparing', 'submitting'].includes(job.status)) return { ...job, status: job.writing ? 'unknown' : 'failed', message: job.writing ? '后台处理中断，结果未确认；请先检查目标目录，不要重复转存' : '后台处理中断，未执行写入' }
-      return job
+      const publicJob = { ...job, ...(job.offline ? { offline: { taskId: job.offline.taskId } } : {}) }
+      if (!active.has(jobId) && ['queued', 'preparing', 'submitting'].includes(job.status)) return { ...publicJob, status: job.writing ? 'unknown' : 'failed', message: job.writing ? '后台处理中断，结果未确认；请先检查目标目录，不要重复转存' : '后台处理中断，未执行写入' }
+      return publicJob
     },
   }
 }

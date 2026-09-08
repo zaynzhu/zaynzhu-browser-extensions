@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "云盘助手",
-  "version": "0.6.1",
-  "description": "连接 115、光鸭和 123，选择目标目录，通过右键转存分享链接并核实结果。",
+  "version": "0.7.0",
+  "description": "连接 115、光鸭和 123，将分享或磁力任务提交到已选目录，并核实任务结果。",
   "permissions": [
     "storage",
     "scripting",
     "declarativeNetRequestWithHostAccess",
     "contextMenus",
-    "activeTab"
+    "activeTab",
+    "alarms"
   ],
   "host_permissions": [
     "https://dapi.guangyapan.com/*",
@@ -18,7 +19,8 @@
     "https://passportapi.115.com/*",
     "https://webapi.115.com/*",
     "https://proapi.115.com/*",
-    "https://api.123278.com/*"
+    "https://api.123278.com/*",
+    "https://clouddownload.115.com/*"
   ],
   "background": {
     "service_worker": "background.js",
