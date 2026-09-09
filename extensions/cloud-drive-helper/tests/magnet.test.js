@@ -31,10 +31,11 @@ for (const provider of ['115', 'guangya', '123']) test(`${provider} 磁力只提
       assert.ok(marked)
       assert.equal(String(body.wp_path_id ?? body.parentId ?? body.upload_dir), '42')
       assert.equal(body.savepath, undefined)
+      if (provider === 'guangya') assert.deepEqual(body.fileIndexes, [0])
       writes++
       return Response.json(provider === '115' ? { state: true } : { code: 0, data: provider === '123' ? { task_list: [{ task_id: 77, result: 0 }] } : { taskId: '77' } })
     }
-    if (url.pathname.endsWith('/resolve_res')) return Response.json(noResource ? { code: 404, msg: '没有资源' } : { code: 0, data: { btResInfo: { subfiles: [{ isDir: false, fileIndex: 0 }] } } })
+    if (url.pathname.endsWith('/resolve_res')) return Response.json(noResource ? { code: 404, msg: '没有资源' } : { code: 0, data: { btResInfo: { subfiles: [{ isDir: false }] } } })
     if (url.pathname.endsWith('/task/resolve')) return Response.json({ code: 0, data: { list: noResource ? [{ result: 1, err_msg: '解析失败' }] : [{ result: 0, id: 10, files: [{ id: 1 }] }] } })
     if (body.ac === 'task_lists') return Response.json({ state: true, tasks: writes ? [{ info_hash: hash, status, file_id: '900', name: '合成文件' }] : [] })
     if (url.pathname.endsWith('/list_task')) return Response.json({ code: 0, data: { list: [{ taskId: '77', status, fileId: '900', fileName: '合成文件' }] } })
@@ -106,4 +107,17 @@ test('磁力提交后释放执行队列，后台重启只查原任务，换目�
   assert.equal(reads, 2)
   assert.equal(writes, 1)
   assert.ok(!JSON.stringify(temporary.values).includes('synthetic-secret-token'))
+})
+
+test('光鸭省略零值编号后若出现重复编号，停止且不创建任务', async t => {
+  let createCalls = 0
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    const body = JSON.parse(options.body)
+    if (url.endsWith('/resolve_res')) return Response.json({ code: 0, data: { btResInfo: { subfiles: [{}, {}] } } })
+    if (url.endsWith('/create_task')) { createCalls++; throw new Error('不应创建任务') }
+    const list = body.parentId === '' ? [{ fileId: '42', fileName: '合成目标', resType: 2 }] : []
+    return Response.json({ code: 0, data: { total: list.length, list } })
+  })
+  await assert.rejects(createMagnetClient(context('guangya')).submit(async () => {}), /编号重复/)
+  assert.equal(createCalls, 0)
 })

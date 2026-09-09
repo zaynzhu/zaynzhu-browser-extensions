@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "云盘助手",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "连接 115、光鸭和 123，将分享或磁力任务提交到已选目录，并核实任务结果。",
   "permissions": [
     "storage",

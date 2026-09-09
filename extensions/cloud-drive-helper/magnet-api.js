@@ -130,12 +130,17 @@ export function createMagnetClient({ share, target, session, limiter, with115Coo
           if (!Array.isArray(items)) throw reject('光鸭磁力清单不完整，未提交任务')
           for (const item of items) {
             if (item.isDir) walk(item.subfiles)
-            else if (Number.isSafeInteger(item.fileIndex) && item.fileIndex >= 0) indexes.push(item.fileIndex)
-            else throw reject('光鸭磁力清单缺少文件标识，未提交任务')
+            else {
+              // 官网按省略的零值编号处理首个文件；其余缺失或重复编号仍停止。
+              const index = item.fileIndex ?? 0
+              if (!Number.isSafeInteger(index) || index < 0) throw reject('光鸭磁力清单的文件标识无效，未提交任务')
+              indexes.push(index)
+            }
           }
         }
         walk(data.btResInfo.subfiles)
         if (!indexes.length) throw reject('光鸭未找到可下载资源，未提交任务')
+        if (new Set(indexes).size !== indexes.length) throw reject('光鸭文件编号重复，无法确认完整清单，未提交任务')
         await beforeWrite()
         const result = await guangya('cloudcollection/v1/create_task', { url: share.url, fileIndexes: indexes, parentId: target.id })
         return { taskId: taskId(result?.taskId), beforeIds }

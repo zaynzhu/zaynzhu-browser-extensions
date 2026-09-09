@@ -115,7 +115,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 
 > 十七个扩展互相独立，可按需安装，也可以同时安装全部。
 
-### 云盘助手：统一配置与目录选择与分享转存（0.7.0）
+### 云盘助手：统一配置与目录选择与分享转存（0.7.1）
 
 1. 加载或重新加载 `extensions/cloud-drive-helper/`，点击扩展图标直接打开独立配置页；「全部任务」按钮单独展开可收起的任务框。页面提供 115、光鸭、123 三个入口，光鸭默认使用网页登录，支持 115 手机扫码、光鸭双方式连接和 123 账号密码登录。
 2. 光鸭可选两种连接方式：**开发者凭证**保留原有 `client_id` / `client_secret` 输入（光鸭会员在「账号设置 → TOKEN 管理 → 成为开发者」获取）；**网页登录**先点击「打开光鸭官网登录」，自行在官网完成验证码或扫码登录，再回配置页点击「已登录，连接此账号」。已登录官网时可直接回配置页连接。
@@ -138,7 +138,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 
 光鸭与 123 必须等待服务端任务确认完成，再回读目标目录核实新增项目；115 回读目标并核对分享目录中的子项。只有核验通过才显示成功。明确拒绝显示失败；提交后超时、任务未完成或回读不一致显示「结果未确认」，不自动重试写入。关闭网页任务框或原网页不取消后台队列；重新加载扩展或关闭浏览器可能中断任务，请避免在处理中操作。后台中断后不会自动重试写入。
 
-2026-09-07 已在真实 Chrome 通过右键入口完成 123 的一次转存：服务端任务完成，已保存目标中核实 1 个新增项目。115 也已使用所选客户端完成一次真实转存，并在已选目标核实 1 个新增项目；光鸭已复用官网现有登录完成一次转存，服务端任务完成，并在已选目标核实 1 个新增项目。48 项合成测试全部通过，覆盖目标绑定、同名拒绝、任务失败、网络超时与结果未确认。验收链接、真实目录内容及凭证不放入仓库。
+2026-09-07 已在真实 Chrome 通过右键入口完成 123 的一次转存：服务端任务完成，已保存目标中核实 1 个新增项目。115 也已使用所选客户端完成一次真实转存，并在已选目标核实 1 个新增项目；光鸭已复用官网现有登录完成一次转存，服务端任务完成，并在已选目标核实 1 个新增项目。49 项合成测试全部通过，覆盖目标绑定、同名拒绝、任务失败、网络超时与结果未确认。验收链接、真实目录内容及凭证不放入仓库。
 
 任务框新增 `activeTab` 权限，仅在用户右键提交时注入，不申请所有网页的持久读取权限。任务内容放在跨源扩展 iframe 中，后台校验注入页面的授权令牌；普通网页不能读取任务列表。网页刷新后可从独立配置页的「全部任务」查看队列，下次右键提交会重新显示网页任务框。
 
@@ -163,7 +163,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 
 新增磁力仅沿用已确认的提交和状态接口，不增加种子上传、不自动重试或切换目录；需要验证码或安全密钥时明确停止。当前三家分享转存均已完成各一次真实验收，不代表所有分享类型和客户端都已覆盖。
 
-**磁力下载（新增，真实验收待测试链接）**
+**磁力下载**
 
 选中一个 `magnet:?xt=urn:btih:...` 链接，或右键带磁力地址的链接／按钮，选择「磁力下载到已选目录 → 115／光鸭／123」。支持 40 位十六进制与 32 位 Base32 的 BTIH；不支持 `.torrent` 种子上传、纯脚本按钮或多条磁力一起提交。原分享转存菜单、独立配置页、目录缓存及全部任务框保留。
 
@@ -173,7 +173,7 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 
 状态及核验记录仅保存在本机 `chrome.storage.session`；服务工作线程休眠后可继续只读查询，浏览器关闭或扩展重新加载会清除本次记录，不自动恢复写入。新增 `alarms` 权限用于状态查询，以及 `https://clouddownload.115.com/*` 用于 115 离线接口；仍仅给本扩展当前请求临时附加所选会话。
 
-接口参考：[p115client 云下载接口](https://github.com/ChenyangGao/p115client/blob/main/p115client/client.py)、[光鸭官网](https://www.guangyapan.com/)、[OpenList 123 离线实现](https://github.com/OpenListTeam/OpenList/blob/main/drivers/123/util.go)及[123 离线状态映射](https://github.com/OpenListTeam/OpenList/blob/main/internal/offline_download/123/client.go)。原有与新增合成测试一并回归；未收到真实测试磁力前不会提交真实离线任务。
+接口参考：[p115client 云下载接口](https://github.com/ChenyangGao/p115client/blob/main/p115client/client.py)、[光鸭官网](https://www.guangyapan.com/)、[OpenList 123 离线实现](https://github.com/OpenListTeam/OpenList/blob/main/drivers/123/util.go)及[123 离线状态映射](https://github.com/OpenListTeam/OpenList/blob/main/internal/offline_download/123/client.go)。原有与新增合成测试一并回归。2026-09-09 使用用户提供的同一磁力验收：115 检测到既有任务后停止，未重复提交、删除或移动；123 与光鸭均经服务端完成状态及已选目标目录回读核实成功。115 新建任务链路未在本次重复创建，仍需不同的未存在磁力单独验收。光鸭首个文件的零值 fileIndex 可能省略，按官网规则视为 0；若编号重复则停止，避免漏选。真实磁力及文件内容不写入仓库。
 
 合成测试与界面预览（不访问真实账号）：
 
