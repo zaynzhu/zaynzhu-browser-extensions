@@ -17,7 +17,8 @@ function taskId(value) {
   return id
 }
 function reason(provider, result) {
-  const message = String(result?.err_msg || result?.errMsg || result?.error_msg || result?.message || result?.msg || '')
+  const message = String(result?.err_msg || result?.errMsg || result?.error_msg || result?.message || result?.msg || result?.error || '')
+  if (/已存在|重复任务/.test(message)) return `${provider} 已存在相同任务，本次未新建`
   if (/无资源|没有资源|资源不存在|解析失败|无法解析|资源失效|资源不可用/.test(message)) return `${provider} 无法解析或获取该磁力资源`
   if (/验证|captcha/i.test(message)) return `${provider} 要求验证，请在官网处理；本版不自动重试`
   if (/空间/.test(message)) return `${provider} 空间不足，离线任务失败`
@@ -99,20 +100,18 @@ export function createMagnetClient({ share, target, session, limiter, with115Coo
       if (!Array.isArray(data?.list)) throw new Error('光鸭任务列表格式无法确认')
       return data.list.find(item => String(item.taskId) === ref.taskId)
     }
+    if (provider === '115') {
+      // 提交后仅从最近一页定位本次哈希，不扫描历史记录，也不以此作为提交条件。
+      const data = await pan115({ ac: 'task_lists', page: 1, page_size: 100 })
+      if (!Array.isArray(data?.tasks)) throw new Error('115 本次任务状态暂时无法读取')
+      return data.tasks.find(item => String(item.info_hash).toLowerCase() === share.infoHash) || null
+    }
     for (let page = 1; page <= 20; page++) {
-      const data = provider === '123'
-        ? await pan123('offline_download/task/list', { current_page: page, page_size: 100, status_arr: [0, 1, 2, 3] })
-        : await pan115({ ac: 'task_lists', page, page_size: 100 })
-      const list = provider === '123' ? data?.list : data?.tasks
-      const pages = provider === '115' && data?.page_count !== undefined ? Number(data.page_count) : null
-      const knownPages = Number.isSafeInteger(pages) && pages >= 0
-      if (!Array.isArray(list)) {
-        if (knownPages && page > pages) return null
-        throw new Error(`${name} 第 ${page} 页任务列表格式无法确认，未继续操作`)
-      }
-      const task = list.find(item => provider === '123' ? String(item.task_id) === ref.taskId : String(item.info_hash).toLowerCase() === share.infoHash)
+      const data = await pan123('offline_download/task/list', { current_page: page, page_size: 100, status_arr: [0, 1, 2, 3] })
+      if (!Array.isArray(data?.list)) throw new Error('123 任务状态响应格式无法确认')
+      const task = data.list.find(item => String(item.task_id) === ref.taskId)
       if (task) return task
-      if (knownPages ? page >= pages : list.length < 100) return null
+      if (data.list.length < 100) return null
     }
     throw new Error(`${name} 任务列表超过本版查询范围`)
   }
@@ -122,7 +121,6 @@ export function createMagnetClient({ share, target, session, limiter, with115Coo
       await verifyTarget()
       const beforeIds = (await files(target.id)).map(item => item.id)
       if (provider === '115') {
-        if (await findTask({})) throw reject('115 已存在相同磁力任务，未重复提交，也不会更改原任务目录')
         await beforeWrite()
         await pan115({ ac: 'add_task_url', url: share.url, wp_path_id: target.id }, true)
         return { taskId: share.infoHash, beforeIds }

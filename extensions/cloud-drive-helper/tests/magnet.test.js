@@ -63,8 +63,6 @@ for (const provider of ['115', 'guangya', '123']) test(`${provider} 磁力只提
     noResource = true
     await assert.rejects(client.submit(async () => { throw new Error('解析失败时不应写入') }), /资源|解析/)
     assert.equal(writes, 1)
-  } else {
-    await assert.rejects(client.submit(async () => { throw new Error('不应重复写入') }), /已存在相同/)
   }
 })
 
@@ -122,28 +120,50 @@ test('光鸭省略零值编号后若出现重复编号，停止且不创建任�
   assert.equal(createCalls, 0)
 })
 
-test('115 重复检查遵守服务端页数，不因单页不足请求数量漏查，也不请求末页之后', async t => {
-  for (const existing of [true, false]) {
-    const queried = []
-    let writes = 0
+test('115 提交前不查历史，历史页数不阻止提交，提交后只查本次任务且不翻页', async t => {
+  const actions = []
+  t.mock.method(globalThis, 'fetch', async (raw, options) => {
+    const url = new URL(raw)
+    const body = options.body instanceof URLSearchParams ? Object.fromEntries(options.body) : Object.fromEntries(url.searchParams)
+    if (body.ac === 'task_lists') {
+      actions.push('status')
+      assert.deepEqual(actions, ['submit', 'status'])
+      assert.equal(body.page, '1')
+      return Response.json({ state: true, page_count: 999, tasks: Array.from({ length: 100 }, () => ({ info_hash: 'b'.repeat(40) })) })
+    }
+    if (body.ac === 'add_task_url') {
+      actions.push('submit')
+      assert.equal(body.wp_path_id, '42')
+      return Response.json({ state: true })
+    }
+    const list = body.cid === '0' ? [{ fid: '42', fn: '合成目标', fc: '0' }] : []
+    return Response.json({ state: true, count: list.length, data: list })
+  })
+  const client = createMagnetClient(context('115'))
+  const ref = await client.submit(async () => {})
+  assert.deepEqual(actions, ['submit'])
+  assert.equal((await client.check(ref)).status, 'downloading')
+  assert.deepEqual(actions, ['submit', 'status'])
+})
+
+test('115 由提交接口判断已存在或失败，只提交一次，不重试、不移动目录', async t => {
+  for (const message of ['下载任务已存在', '资源不可用']) {
+    const writes = []
     t.mock.method(globalThis, 'fetch', async (raw, options) => {
       const url = new URL(raw)
       const body = options.body instanceof URLSearchParams ? Object.fromEntries(options.body) : Object.fromEntries(url.searchParams)
-      if (body.ac === 'task_lists') {
-        const page = Number(body.page)
-        queried.push(page)
-        assert.ok(page <= 2)
-        return Response.json({ state: true, page_count: 2, tasks: [{ info_hash: existing && page === 2 ? hash : 'b'.repeat(40) }] })
+      assert.notEqual(body.ac, 'task_lists')
+      if (body.ac) {
+        writes.push(body)
+        assert.equal(body.ac, 'add_task_url')
+        assert.equal(body.wp_path_id, '42')
+        return Response.json({ state: false, error_msg: message })
       }
-      if (body.ac === 'add_task_url') { writes++; assert.equal(body.wp_path_id, '42'); return Response.json({ state: true }) }
       const list = body.cid === '0' ? [{ fid: '42', fn: '合成目标', fc: '0' }] : []
       return Response.json({ state: true, count: list.length, data: list })
     })
-    const submit = () => createMagnetClient(context('115')).submit(async () => {})
-    if (existing) await assert.rejects(submit(), /已存在相同/)
-    else await submit()
-    assert.deepEqual(queried, [1, 2])
-    assert.equal(writes, existing ? 0 : 1)
+    await assert.rejects(createMagnetClient(context('115')).submit(async () => {}), message.includes('已存在') ? /已存在.*未新建/ : /无法解析或获取/)
+    assert.equal(writes.length, 1)
     t.mock.restoreAll()
   }
 })
