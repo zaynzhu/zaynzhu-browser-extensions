@@ -121,3 +121,29 @@ test('光鸭省略零值编号后若出现重复编号，停止且不创建任�
   await assert.rejects(createMagnetClient(context('guangya')).submit(async () => {}), /编号重复/)
   assert.equal(createCalls, 0)
 })
+
+test('115 重复检查遵守服务端页数，不因单页不足请求数量漏查，也不请求末页之后', async t => {
+  for (const existing of [true, false]) {
+    const queried = []
+    let writes = 0
+    t.mock.method(globalThis, 'fetch', async (raw, options) => {
+      const url = new URL(raw)
+      const body = options.body instanceof URLSearchParams ? Object.fromEntries(options.body) : Object.fromEntries(url.searchParams)
+      if (body.ac === 'task_lists') {
+        const page = Number(body.page)
+        queried.push(page)
+        assert.ok(page <= 2)
+        return Response.json({ state: true, page_count: 2, tasks: [{ info_hash: existing && page === 2 ? hash : 'b'.repeat(40) }] })
+      }
+      if (body.ac === 'add_task_url') { writes++; assert.equal(body.wp_path_id, '42'); return Response.json({ state: true }) }
+      const list = body.cid === '0' ? [{ fid: '42', fn: '合成目标', fc: '0' }] : []
+      return Response.json({ state: true, count: list.length, data: list })
+    })
+    const submit = () => createMagnetClient(context('115')).submit(async () => {})
+    if (existing) await assert.rejects(submit(), /已存在相同/)
+    else await submit()
+    assert.deepEqual(queried, [1, 2])
+    assert.equal(writes, existing ? 0 : 1)
+    t.mock.restoreAll()
+  }
+})

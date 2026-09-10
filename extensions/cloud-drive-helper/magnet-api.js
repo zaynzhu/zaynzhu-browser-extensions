@@ -104,10 +104,15 @@ export function createMagnetClient({ share, target, session, limiter, with115Coo
         ? await pan123('offline_download/task/list', { current_page: page, page_size: 100, status_arr: [0, 1, 2, 3] })
         : await pan115({ ac: 'task_lists', page, page_size: 100 })
       const list = provider === '123' ? data?.list : data?.tasks
-      if (!Array.isArray(list)) throw new Error(`${name} 任务列表格式无法确认`)
+      const pages = provider === '115' && data?.page_count !== undefined ? Number(data.page_count) : null
+      const knownPages = Number.isSafeInteger(pages) && pages >= 0
+      if (!Array.isArray(list)) {
+        if (knownPages && page > pages) return null
+        throw new Error(`${name} 第 ${page} 页任务列表格式无法确认，未继续操作`)
+      }
       const task = list.find(item => provider === '123' ? String(item.task_id) === ref.taskId : String(item.info_hash).toLowerCase() === share.infoHash)
       if (task) return task
-      if (list.length < 100) return null
+      if (knownPages ? page >= pages : list.length < 100) return null
     }
     throw new Error(`${name} 任务列表超过本版查询范围`)
   }
