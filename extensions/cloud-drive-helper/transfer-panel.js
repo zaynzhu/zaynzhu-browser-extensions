@@ -1,21 +1,6 @@
-const token = new URLSearchParams(location.search).get('token')
-const toggle = document.getElementById('togglePanel')
-const body = document.getElementById('panelBody')
 const list = document.getElementById('jobs')
 const labels = { queued: '排队中', preparing: '转存中', submitting: '转存中', success: '成功', failed: '失败', unknown: '结果未确认', downloading: '离线处理中' }
-let collapsed = false
 const rows = new Map()
-function setCollapsed(value) {
-  collapsed = value
-  body.hidden = collapsed
-  toggle.textContent = collapsed ? '展开' : '收起'
-  toggle.setAttribute('aria-expanded', String(!collapsed))
-  if (token) parent.postMessage({ type: 'transfer-panel-height', token, collapsed }, '*')
-}
-toggle.addEventListener('click', () => setCollapsed(!collapsed))
-window.addEventListener('message', event => {
-  if (event.source === parent && event.data?.token === token && event.data?.type === 'expand-transfer-panel') setCollapsed(false)
-})
 document.getElementById('openSettings').addEventListener('click', () => chrome.runtime.openOptionsPage())
 async function refresh() {
   try {

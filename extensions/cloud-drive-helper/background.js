@@ -1,6 +1,5 @@
 import { RateLimiter, readFolderPage, validateCredentials } from './guangya-api.js'
 import { readGuangyaWebSession } from './web-session.js'
-import { installTransferPanel } from './transfer-overlay.js'
 import { createTransferService } from './transfer-background.js'
 import { createCachedHandler } from './directory-cache.js'
 import { create123Handler } from './pan123-background.js'
@@ -117,13 +116,17 @@ const handleCachedMessage = createCachedHandler(chrome.storage.local, handleMess
 const transfers = createTransferService(chrome, handleCachedMessage)
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (sender.id === chrome.runtime.id && sender.url === chrome.runtime.getURL('popup.html') && message.type === 'open-task-panel') {
+    if (!Number.isInteger(sender.tab?.windowId)) { sendResponse({ ok: false, error: '无法定位当前浏览器窗口' }); return }
+    // 在用户点击的消息处理阶段立即打开，不能排到下载任务之后而丢失用户手势。
+    chrome.sidePanel.open({ windowId: sender.tab.windowId }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false, error: '侧边栏未能打开，请再次点击“全部任务”' }))
+    return true
+  }
   if (sender.id === chrome.runtime.id && ['list-transfers', 'check-offline'].includes(message.type)) {
     const panelUrl = chrome.runtime.getURL('transfer-panel.html')
     const read = async () => {
       await ready
-      const grants = (await chrome.storage.session.get('transferPanelGrants')).transferPanelGrants || {}
-      const token = grants[sender.tab?.id]
-      const trusted = (sender.tab?.url === chrome.runtime.getURL('popup.html') && sender.url === `${panelUrl}?token=config`) || (token && sender.url === `${panelUrl}?token=${token}`)
+      const trusted = sender.url === panelUrl && !sender.tab
       if (!trusted) throw new Error('任务面板未授权')
       if (message.type === 'check-offline') {
         const pending = commands.then(() => transfers.checkOffline(message.jobId))
@@ -166,23 +169,14 @@ let submissions = Promise.resolve()
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
   const magnetProvider = /^save-magnet-(115|guangya|123)$/.exec(String(info.menuItemId))?.[1]
   if (info.menuItemId !== 'save-share' && !magnetProvider) return
+  // 全局侧边栏属于浏览器窗口，跨标签页保持打开；立即调用以保留右键用户手势。
+  if (Number.isInteger(tab?.windowId)) chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => {})
   const receipt = submissions.then(async () => {
     await ready
     const jobId = await transfers.create({ linkUrl: info.linkUrl, selectionText: info.selectionText, ...(magnetProvider ? { kind: 'magnet', provider: magnetProvider } : {}) })
     const pending = commands.then(() => transfers.run(jobId))
     commands = pending.catch(() => {})
     await chrome.action.setBadgeText({ text: String((await transfers.list()).filter(job => ['queued', 'preparing', 'submitting', 'downloading'].includes(job.status)).length) })
-    if (Number.isInteger(tab?.id)) {
-      try {
-        const state = await chrome.storage.session.get('transferPanelGrants')
-        const grants = state.transferPanelGrants || {}
-        const token = grants[tab.id] || crypto.randomUUID()
-        await chrome.storage.session.set({ transferPanelGrants: { ...grants, [tab.id]: token } })
-        await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: installTransferPanel, args: [chrome.runtime.getURL(`transfer-panel.html?token=${token}`), token] })
-      } catch {
-        // 受限页面不打开替代标签页；用户可进入独立配置页的“全部任务”查看同一队列。
-      }
-    }
     pending.finally(async () => {
       const count = (await transfers.list()).filter(job => ['queued', 'preparing', 'submitting', 'downloading'].includes(job.status)).length
       await chrome.action.setBadgeText({ text: count ? String(count) : '' })

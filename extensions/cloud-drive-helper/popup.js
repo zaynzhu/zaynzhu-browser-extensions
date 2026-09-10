@@ -1,4 +1,3 @@
-import { installTransferPanel } from './transfer-overlay.js'
 import { CLIENT_TYPES } from './pan115-api.js'
 
 const controls = document.getElementById('controls')
@@ -358,6 +357,9 @@ document.getElementById('testConnectionBtn').addEventListener('click', () => run
   setStatus('连接正常，根目录已更新')
 }))
 
-document.getElementById('showTasksBtn').addEventListener('click', () => {
-  installTransferPanel(chrome.runtime.getURL('transfer-panel.html?token=config'), 'config')
+document.getElementById('showTasksBtn').addEventListener('click', async () => {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'open-task-panel' })
+    if (!response?.ok) throw new Error(response?.error || '侧边栏未能打开')
+  } catch (error) { setStatus(error.message, true) }
 })

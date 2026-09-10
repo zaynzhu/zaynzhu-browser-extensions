@@ -66,7 +66,7 @@ function installMockChrome() {
   } } }
 }
 
-const allowed = new Map([['/popup.html', 'text/html'], ['/popup.js', 'text/javascript'], ['/popup.css', 'text/css'], ['/pan115-api.js', 'text/javascript'], ['/directory-cache.js', 'text/javascript'], ['/transfer-panel.html', 'text/html'], ['/transfer-panel.js', 'text/javascript'], ['/transfer-panel.css', 'text/css'], ['/transfer-overlay.js', 'text/javascript']])
+const allowed = new Map([['/popup.html', 'text/html'], ['/popup.js', 'text/javascript'], ['/popup.css', 'text/css'], ['/pan115-api.js', 'text/javascript'], ['/directory-cache.js', 'text/javascript'], ['/transfer-panel.html', 'text/html'], ['/transfer-panel.js', 'text/javascript'], ['/transfer-panel.css', 'text/css']])
 const server = createServer(async (request, response) => {
   const path = new URL(request.url, 'http://127.0.0.1').pathname
   response.setHeader('Cache-Control', 'no-store')
@@ -76,16 +76,25 @@ const server = createServer(async (request, response) => {
       <body style="padding:32px;font-family:system-ui"><h1>合成队列验收</h1><p>此页不调用云盘接口，不包含真实账号或分享链接。</p>
       <button id="add">添加合成任务</button><button id="magnet">添加合成磁力任务</button><button id="finish">完成当前任务</button><input id="unrelated" aria-label="继续操作网页" placeholder="任务期间仍可在这里输入">
       <script type="module">
-      import { installTransferPanel } from './transfer-overlay.js'
+      function showPanel() {
+        if (document.querySelector('#previewSidebar')) return
+        const frame = document.createElement('iframe')
+        frame.id = 'previewSidebar'
+        frame.title = '任务侧边栏预览'
+        frame.src = '/transfer-panel.html'
+        frame.style.cssText = 'position:fixed;right:0;top:0;width:370px;height:100vh;border:0;border-left:1px solid #ddd'
+        document.body.style.marginRight = '370px'
+        document.body.append(frame)
+      }
       window.demoJobs = []
       document.querySelector('#add').onclick = () => {
         const index = window.demoJobs.length + 1
         window.demoJobs.unshift({ jobId: String(index), createdAt: Date.now(), provider: '123', sourceLabel: '合成分享-' + index, targetPath: '根目录 / 合成目录', status: window.demoJobs.some(job => job.status === 'preparing') ? 'queued' : 'preparing', message: '合成任务，仅供界面验收' })
-        installTransferPanel(new URL('/transfer-panel.html?token=synthetic', location.href).href, 'synthetic')
+        showPanel()
       }
       document.querySelector('#magnet').onclick = () => {
         window.demoJobs.unshift({ jobId: 'magnet-' + crypto.randomUUID(), kind: 'magnet', provider: '115', sourceLabel: '合成磁力', targetPath: '根目录 / 合成目录', status: 'downloading', message: '离线任务已创建，尚未完成', offline: { taskId: 'synthetic' } })
-        installTransferPanel(new URL('/transfer-panel.html?token=synthetic', location.href).href, 'synthetic')
+        showPanel()
       }
       document.querySelector('#finish').onclick = () => {
         const current = window.demoJobs.find(job => job.status === 'preparing')

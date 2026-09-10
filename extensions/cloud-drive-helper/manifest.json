@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
   "name": "云盘助手",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "连接 115、光鸭和 123，将分享或磁力任务提交到已选目录，并核实任务结果。",
   "permissions": [
     "storage",
     "scripting",
     "declarativeNetRequestWithHostAccess",
     "contextMenus",
-    "activeTab",
-    "alarms"
+    "alarms",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://dapi.guangyapan.com/*",
@@ -33,15 +33,8 @@
     "page": "popup.html",
     "open_in_tab": true
   },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "transfer-panel.html"
-      ],
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ]
-    }
-  ]
+  "minimum_chrome_version": "116",
+  "side_panel": {
+    "default_path": "transfer-panel.html"
+  }
 }
