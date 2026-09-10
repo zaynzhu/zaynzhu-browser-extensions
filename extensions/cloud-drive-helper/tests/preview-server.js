@@ -23,6 +23,7 @@ function installMockChrome() {
       let data
       const key = message.provider === '115' ? `115-${message.app || ''}` : message.provider === '123' ? '123' : message.mode || 'developer'
       const state = states[key] ||= { connected: false, target: null }
+      if (message.type === 'send-sms') return { ok: true, data: { attemptId: 'synthetic-sms' } }
       if (message.type === 'start-qr') {
         if (!message.app) throw new Error('请选择 115 扫码客户端类型')
         pendingQr = { id: crypto.randomUUID(), polls: 0 }
@@ -41,7 +42,7 @@ function installMockChrome() {
       let { connected, target } = state
       if (message.type === 'get-state') data = { connected, target, app: message.app || '', connectionId: state.connectionId }
       else if (message.type === 'open-web-login') data = null
-      else if (message.type === 'connect' || message.type === 'connect-web') {
+      else if (message.type === 'connect' || message.type === 'connect-web' || message.type === 'connect-sms') {
         if (message.credentials?.clientSecret === 'invalid') throw new Error('合成凭证无效')
         connected = true
         state.connected = true

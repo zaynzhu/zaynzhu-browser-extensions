@@ -1,3 +1,4 @@
+import { createGuangyaAuth, ACCOUNT_KEY } from './guangya-auth.js'
 import { RateLimiter, readFolderPage, validateCredentials } from './guangya-api.js'
 import { readGuangyaWebSession } from './web-session.js'
 import { createTransferService } from './transfer-background.js'
@@ -10,6 +11,7 @@ const TARGET_KEY = 'guangyaTarget'
 const WEB_KEY = 'guangyaWebSession'
 const WEB_TARGET_KEY = 'guangyaWebTarget'
 const limiter = new RateLimiter(chrome.storage.session)
+const guangyaAuth = createGuangyaAuth(chrome, limiter)
 const ready = chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' })
 let commands = Promise.resolve()
 const handle115 = create115Handler(chrome)
@@ -18,9 +20,8 @@ const handle123 = create123Handler(chrome)
 chrome.action.onClicked?.addListener(() => chrome.runtime.openOptionsPage())
 
 async function getWebSession() {
-  const state = await chrome.storage.session.get(WEB_KEY)
-  const session = state[WEB_KEY]
-  if (!session || session.expiresAt <= Date.now()) throw new Error('请先在光鸭官网登录，再连接网页登录账号')
+  const session = await guangyaAuth.getSession()
+  if (!session || session.expiresAt <= Date.now()) throw new Error('请先连接光鸭普通账号；官网备用连接过期时可重新连接或改用短信登录')
   return session
 }
 
@@ -37,6 +38,27 @@ async function handleMessage(message) {
   if (message.provider && message.provider !== 'guangya') throw new Error('此云盘尚未接入')
   const web = message.mode === 'web'
   const targetKey = web ? WEB_TARGET_KEY : TARGET_KEY
+  if (message.type === 'send-sms') return guangyaAuth.sendCode(message.phone)
+  if (message.type === 'connect-sms') {
+    const session = await guangyaAuth.login(message.attemptId, message.code)
+    const previous = (await guangyaAuth.getState()).session
+    const saved = (await chrome.storage.local.get(WEB_TARGET_KEY))[WEB_TARGET_KEY]
+    const target = saved?.accountId === session.accountId ? saved.target : null
+    const save = async () => {
+      await chrome.storage.local.set({ [ACCOUNT_KEY]: session, [WEB_TARGET_KEY]: { accountId: session.accountId, target } })
+      await chrome.storage.session.remove(WEB_KEY)
+    }
+    const keep = !previous || previous.accountId === session.accountId
+    if (keep) await save()
+    let root
+    try { root = await limiter.run(() => readFolderPage(session, '', 0, true)) }
+    catch (error) {
+      if (!keep) throw error
+      return { root: null, target, directoryError: error.message }
+    }
+    if (!keep) await save()
+    return { root, target }
+  }
   if (message.type === 'open-web-login') {
     const tab = await chrome.tabs.create({ url: 'https://www.guangyapan.com/' })
     await chrome.storage.session.set({ guangyaLoginTabId: tab.id })
@@ -59,15 +81,15 @@ async function handleMessage(message) {
     const state = await chrome.storage.local.get(WEB_TARGET_KEY)
     const saved = state[WEB_TARGET_KEY]
     const target = saved?.accountId === session.accountId ? saved.target : null
+    await guangyaAuth.clear()
     await chrome.storage.session.set({ [WEB_KEY]: session })
     await chrome.storage.local.set({ [WEB_TARGET_KEY]: { accountId: session.accountId, target } })
     return { root, target }
   }
   if (message.type === 'get-state') {
     if (web) {
-      const session = (await chrome.storage.session.get(WEB_KEY))[WEB_KEY]
+      const { session, connected } = await guangyaAuth.getState()
       const saved = (await chrome.storage.local.get(WEB_TARGET_KEY))[WEB_TARGET_KEY]
-      const connected = Boolean(session && session.expiresAt > Date.now())
       return { connected, target: connected && saved?.accountId === session.accountId ? saved.target : null }
     }
     const state = await chrome.storage.local.get([CREDENTIALS_KEY, TARGET_KEY])
@@ -85,6 +107,7 @@ async function handleMessage(message) {
   }
   if (message.type === 'disconnect') {
     if (web) {
+      await guangyaAuth.clear()
       await chrome.storage.session.remove([WEB_KEY, 'guangyaLoginTabId'])
       await chrome.storage.local.remove(WEB_TARGET_KEY)
       return null
@@ -113,7 +136,7 @@ async function handleMessage(message) {
 
 const handleCachedMessage = createCachedHandler(chrome.storage.local, handleMessage)
 
-const transfers = createTransferService(chrome, handleCachedMessage)
+const transfers = createTransferService(chrome, handleCachedMessage, undefined, undefined, async renew => renew ? getWebSession() : (await guangyaAuth.getState()).session)
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender.id === chrome.runtime.id && sender.url === chrome.runtime.getURL('popup.html') && message.type === 'open-task-panel') {

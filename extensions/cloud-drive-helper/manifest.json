@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "云盘助手",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "连接 115、光鸭和 123，将分享或磁力任务提交到已选目录，并核实任务结果。",
   "permissions": [
     "storage",
@@ -20,7 +20,8 @@
     "https://webapi.115.com/*",
     "https://proapi.115.com/*",
     "https://api.123278.com/*",
-    "https://clouddownload.115.com/*"
+    "https://clouddownload.115.com/*",
+    "https://account.guangyapan.com/*"
   ],
   "background": {
     "service_worker": "background.js",

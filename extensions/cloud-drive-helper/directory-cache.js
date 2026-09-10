@@ -22,7 +22,7 @@ export function createCachedHandler(local, handle) {
     const testing = message.type === 'test-connection'
     try {
       const result = await handle(testing ? { ...message, type: 'list-folders', parentId: '', page: 0 } : message)
-      const connected = message.type === 'connect' || message.type === 'connect-web' || (message.type === 'poll-qr' && result?.status === 'connected')
+      const connected = message.type === 'connect' || message.type === 'connect-web' || message.type === 'connect-sms' || (message.type === 'poll-qr' && result?.status === 'connected')
       if (message.type === 'disconnect') await local.remove(key)
       if (connected || testing || (message.type === 'list-folders' && message.parentId === '' && message.page === 0)) {
         const root = connected ? result.root : result

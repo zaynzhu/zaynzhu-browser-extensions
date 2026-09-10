@@ -53,13 +53,23 @@
       <label for="authMode">连接方式</label>
       <select id="authMode">
         <option value="developer">开发者凭证</option>
-        <option value="web" selected>网页登录（验证码 / 扫码）</option>
+        <option value="web" selected>普通账号（手机号验证码 / 官网备用）</option>
       </select>
       <section id="webLogin">
+        <form id="guangyaSmsForm" autocomplete="off">
+          <label for="guangyaPhone">中国大陆手机号</label>
+          <input id="guangyaPhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="off" required>
+          <button id="sendGuangyaSms" type="button">获取验证码</button>
+          <label for="guangyaCode">短信验证码</label>
+          <input id="guangyaCode" type="text" inputmode="numeric" maxlength="8" autocomplete="off" required>
+          <button type="submit" class="primary">登录并保持连接</button>
+          <p class="hint">仅登录已有账号。本机保存本次登录令牌并按官方接口续期，不保存验证码；退出会清除此连接。</p>
+        </form>
+        <p class="hint">官网登录备用入口（遇到人机验证时使用）：</p>
         <p class="hint">在光鸭官网完成登录，再回到这里连接。仅在你点击连接时读取刚打开的官网标签页登录状态。</p>
         <button id="openWebLoginBtn" type="button">1. 打开光鸭官网登录</button>
         <button id="connectWebBtn" type="button" class="primary">2. 已登录，连接此账号</button>
-        <p class="hint">访问令牌仅保留到浏览器关闭；过期后需刷新官网并重新连接。不保存密码、验证码或刷新令牌。两种方式的目标目录分别保存。</p>
+        <p class="hint">官网备用方式的访问令牌仅保留到浏览器关闭，过期需重新连接；上述短信登录则保留在本机并支持续期。官网备用不读取刷新令牌，目标始终按账号绑定。</p>
       </section>
       <form id="connectForm" autocomplete="off" hidden>
         <label for="clientId">client_id</label>
@@ -92,7 +102,7 @@
   <footer>
     <span class="hint">已保存的目标</span>
     <p id="savedTarget">尚未选择</p>
-    <p class="hint">右键分享或磁力链接可加入任务；磁力需明确选择云盘，始终使用该云盘已选目录。光鸭使用网页登录连接。</p>
+    <p class="hint">右键分享或磁力链接可加入任务；磁力需明确选择云盘，始终使用该云盘已选目录。光鸭使用普通账号连接。</p>
   </footer>
   </main>
   <script type="module" src="popup.js"></script>

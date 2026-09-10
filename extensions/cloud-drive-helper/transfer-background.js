@@ -16,7 +16,7 @@ export function buildTransferRule(extensionId, cookie, url) {
   }
 }
 
-export function createTransferService(chromeApi, getState, execute = executeShareTransfer, magnetClient = createMagnetClient) {
+export function createTransferService(chromeApi, getState, execute = executeShareTransfer, magnetClient = createMagnetClient, getGuangyaSession) {
   const local = chromeApi.storage.local
   const temporary = chromeApi.storage.session
   const active = new Set()
@@ -33,7 +33,7 @@ export function createTransferService(chromeApi, getState, execute = executeShar
     return pending
   }
 
-  async function binding(provider) {
+  async function binding(provider, renew = false) {
     const state = await local.get(['pan115SelectedApp', 'pan115Sessions', 'pan115Targets', 'pan123Session', 'pan123Target', 'guangyaWebTarget'])
     let session, target, scope, message
     if (provider === '115') {
@@ -49,19 +49,19 @@ export function createTransferService(chromeApi, getState, execute = executeShar
       scope = '123'
       message = { provider }
     } else {
-      session = (await temporary.get('guangyaWebSession')).guangyaWebSession
+      session = getGuangyaSession ? await getGuangyaSession(renew) : (await temporary.get('guangyaWebSession')).guangyaWebSession
       target = state.guangyaWebTarget?.accountId === session?.accountId ? state.guangyaWebTarget?.target : null
       scope = 'guangya-web'
       message = { provider: 'guangya', mode: 'web' }
     }
     const connected = await getState({ ...message, type: 'get-state' })
-    if (!session || !connected.connected) throw new Error(provider === 'guangya' ? '请在光鸭“网页登录”方式连接账号并选择目标目录' : '对应云盘未连接，请先连接账号')
+    if (!session || !connected.connected) throw new Error(provider === 'guangya' ? '请连接光鸭普通账号并选择目标目录' : '对应云盘未连接，请先连接账号')
     if (!target?.path?.length || target.id !== target.path.at(-1)?.id) throw new Error('该连接未选择目标目录，未执行转存')
     return { session, target, scope }
   }
 
   const parseInput = info => info.kind === 'magnet' ? parseMagnet(info.linkUrl || info.selectionText || '', info.provider) : parseShareLink(info.linkUrl || info.selectionText || '')
-  const bindingKey = selected => JSON.stringify({ accountId: selected.session.accountId, target: selected.target, scope: selected.scope })
+  const bindingKey = selected => JSON.stringify({ accountId: selected.session.accountId, connectionId: selected.session.connectionId, target: selected.target, scope: selected.scope })
 
   function clientContext(share, selected) {
     return {
@@ -79,7 +79,7 @@ export function createTransferService(chromeApi, getState, execute = executeShar
     const job = (await temporary.get(JOB_KEY))[JOB_KEY]?.[jobId]
     if (!job?.offline || !['downloading', 'unknown'].includes(job.status)) return
     try {
-      const selected = await binding(job.provider)
+      const selected = await binding(job.provider, true)
       if (bindingKey(selected) !== job.offline.bindingKey) throw new Error('账号或目标已变化，停止查询原任务；原云盘任务可能仍在运行')
       const share = { provider: job.provider, kind: 'magnet', infoHash: job.offline.infoHash }
       const result = await magnetClient(clientContext(share, selected)).check(job.offline)
@@ -98,13 +98,16 @@ export function createTransferService(chromeApi, getState, execute = executeShar
       if (!snapshot && !info) return
       const share = snapshot?.share || parseInput(info)
       const selected = snapshot?.selected || await binding(share.provider)
-      if (JSON.stringify(await binding(share.provider)) !== JSON.stringify(selected)) throw new Error('排队期间账号或目标目录已变化，请重新提交')
+      const currentBinding = await binding(share.provider, true)
+      if (bindingKey(currentBinding) !== bindingKey(selected)) throw new Error('排队期间账号或目标目录已变化，请重新提交')
+      selected.session = currentBinding.session
       await update(jobId, { provider: share.provider, targetPath: selected.target.path.map(item => item.name).join(' / '), status: 'preparing', message: '正在准备转存' })
       const context = {
         ...clientContext(share, selected),
         beforeWrite: async () => {
-          const current = await binding(share.provider)
-          if (JSON.stringify(current) !== JSON.stringify(selected)) throw new Error('账号或目标目录已变化，未执行转存')
+          const current = await binding(share.provider, true)
+          if (bindingKey(current) !== bindingKey(selected)) throw new Error('账号或目标目录已变化，未执行转存')
+          Object.assign(selected.session, current.session)
           // 写入前持久标记；后台中断后不得把该任务当成未执行而自动重试。
           await update(jobId, { status: 'submitting', message: '正在提交转存', writing: true })
           writing = true

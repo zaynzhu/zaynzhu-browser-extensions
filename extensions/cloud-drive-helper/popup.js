@@ -194,7 +194,7 @@ async function loadState() {
     if (state.root) { renderFolders(state.root, ROOT_PATH); setStatus('已显示保存的目录，可手动刷新或测试连接') }
     else await loadFolders(ROOT_PATH, 0)
   }
-  else setStatus(currentProvider === '123' ? '请输入 123 账号密码连接' : currentProvider === '115' ? '请选择客户端类型并使用手机扫码连接' : authMode.value === 'web' ? '请在光鸭官网登录后连接' : '请先填写光鸭开发者凭证')
+  else setStatus(currentProvider === '123' ? '请输入 123 账号密码连接' : currentProvider === '115' ? '请选择客户端类型并使用手机扫码连接' : authMode.value === 'web' ? '请输入手机号验证码登录，或使用官网登录备用入口' : '请先填写光鸭开发者凭证')
 }
 
 run(loadState)
@@ -362,4 +362,46 @@ document.getElementById('showTasksBtn').addEventListener('click', async () => {
     const response = await chrome.runtime.sendMessage({ type: 'open-task-panel' })
     if (!response?.ok) throw new Error(response?.error || '侧边栏未能打开')
   } catch (error) { setStatus(error.message, true) }
+})
+
+
+let guangyaSmsAttempt = null
+let smsCooldownTimer = null
+const smsButton = document.getElementById('sendGuangyaSms')
+smsButton.addEventListener('click', () => run(async () => {
+  guangyaSmsAttempt = null
+  document.getElementById('guangyaCode').value = ''
+  const data = await send({ type: 'send-sms', provider: 'guangya', mode: 'web', phone: document.getElementById('guangyaPhone').value.trim() })
+  guangyaSmsAttempt = data.attemptId
+  smsButton.disabled = true
+  smsButton.textContent = '60 秒后可重新获取'
+  clearTimeout(smsCooldownTimer)
+  smsCooldownTimer = setTimeout(() => { smsButton.disabled = false; smsButton.textContent = '获取验证码' }, 60000)
+  setStatus('验证码已发送，请输入验证码登录')
+}))
+document.getElementById('guangyaPhone').addEventListener('input', () => { guangyaSmsAttempt = null })
+document.getElementById('guangyaSmsForm').addEventListener('submit', event => {
+  event.preventDefault()
+  run(async () => {
+    if (!guangyaSmsAttempt) throw new Error('请先获取该手机号的验证码')
+    const input = document.getElementById('guangyaCode')
+    const code = input.value.trim()
+    input.value = ''
+    const data = await send({ type: 'connect-sms', provider: 'guangya', mode: 'web', attemptId: guangyaSmsAttempt, code })
+    guangyaSmsAttempt = null
+    document.getElementById('guangyaSmsForm').reset()
+    setConnected(true)
+    renderTarget(data.target)
+    if (data.root) renderFolders(data.root, ROOT_PATH)
+    else {
+      folderList.replaceChildren()
+      breadcrumbs.replaceChildren()
+      currentPath = ROOT_PATH
+      currentPage = 0
+      document.getElementById('folderCount').textContent = '目录尚未加载，请刷新'
+      document.getElementById('pagination').hidden = true
+      document.getElementById('emptyState').hidden = true
+    }
+    setStatus(data.directoryError ? `登录已保存，${data.directoryError}；可刷新目录` : '光鸭已登录，会话已保存在本机并支持续期', Boolean(data.directoryError))
+  })
 })

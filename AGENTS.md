@@ -105,6 +105,7 @@ zaynzhu-browser-extensions/
 │       ├── manifest.json
 │       ├── background.js
 │       ├── guangya-api.js       # 开发者签名 / 网页 Bearer、目录列表、跨后台休眠限流
+│       ├── guangya-auth.js     # 手机验证码登录与本机持久会话续期
 │       ├── web-session.js       # 按需读取指定光鸭官网登录项
 │       ├── pan115-api.js        # 分客户端二维码 / 会话交换 / 只读目录接口
 │       ├── pan115-background.js # 持久会话、类型和账号隔离、受限请求头规则
@@ -129,7 +130,7 @@ zaynzhu-browser-extensions/
 - Service Worker（后台运行）
 - 简单搜索扩展仅申请 `contextMenus` 权限；hdhive-search 额外申请 `storage`；xcili-search 额外申请 `activeTab` 和 `storage`；mukaku-search 额外申请 `storage`；kuakeq-search 额外申请 `storage`；jiaofu-search 额外申请 `storage`；subhd-search 额外申请 `storage`；imdb-search 申请 `storage`；tgtodrive-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（目标为自建 NAS，地址可配置无法预先限定）；enhance-pansou 申请 `storage` 和 `scripting`（content script 注入详情页），host 权限 `<all_urls>`（观影站与盘搜地址均可配置）；pansou-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（盘搜地址可配置）；juying-search 额外申请 `storage` 和 `scripting`（注入填词脚本），host 权限 `<all_urls>`（聚影地址可配置）；dianying-search 仅申请 `contextMenus` 和 `storage`（直开搜索 URL，无注入）；panlian-search 仅申请 `contextMenus` 和 `storage`（直开搜索 URL，无注入）；zhenying-search 仅申请 `contextMenus` 和 `storage`（直开搜索 URL，无注入）
 - 零依赖，纯原生 JS
-- cloud-drive-helper 申请 `sidePanel`、`contextMenus`、`storage`、`scripting` 及 `https://dapi.guangyapan.com/*`、`https://api.guangyapan.com/*`、`https://www.guangyapan.com/*`。点击图标通过 `openOptionsPage` 打开独立 `popup.html` 配置页；「全部任务」打开 `transfer-panel.html` 原生窗口级侧栏。光鸭支持开发者凭证（本机 `chrome.storage.local`，TRUSTED_CONTEXTS）与网页登录（仅用户点击时读取本扩展打开的官网标签页指定登录项，访问令牌存 `chrome.storage.session`，不读取刷新令牌）。两种方式的目标分开保存，网页目标绑定账号，切换账号清除旧目标。开发者方式仅读取普通目录并保存目标；分享转存使用网页登录及其独立目标，磁力为独立新增入口，保留分享转存链路。实际成功响应可能省略 `code`，需校验 `msg` 与目录结构；限流时间保存在 `chrome.storage.session`，请求间隔至少 2 秒。
+- cloud-drive-helper 申请 `sidePanel`、`contextMenus`、`storage`、`scripting` 及 `https://dapi.guangyapan.com/*`、`https://api.guangyapan.com/*`、`https://www.guangyapan.com/*`。点击图标通过 `openOptionsPage` 打开独立 `popup.html` 配置页；「全部任务」打开 `transfer-panel.html` 原生窗口级侧栏。光鸭支持开发者凭证（本机 `chrome.storage.local`，TRUSTED_CONTEXTS）与普通账号：短信登录令牌在本机持久保存并续期；官网备用仅在用户点击连接时读取指定登录项，访问令牌存 `chrome.storage.session`，不读取官网刷新令牌。短信认证主机为 `https://account.guangyapan.com/*`。两种方式的目标分开保存，网页目标绑定账号，切换账号清除旧目标。开发者方式仅读取普通目录并保存目标；分享转存使用网页登录及其独立目标，磁力为独立新增入口，保留分享转存链路。实际成功响应可能省略 `code`，需校验 `msg` 与目录结构；限流时间保存在 `chrome.storage.session`，请求间隔至少 2 秒。
 
 - 115 主方案是在插件内选择客户端类型后手机扫码，不依赖官网已登录或 AppID。追加 `qrcodeapi.115.com`、`passportapi.115.com`、`webapi.115.com`、`proapi.115.com` 主机及 `declarativeNetRequestWithHostAccess` 权限；扫码 Cookie 按客户端类型保存在本机 `chrome.storage.local`，目标绑定类型和账号，换账号失败保留旧状态。仅目录请求期间通过受限规则附加 Cookie（仅本扩展发起的 `/files?` 或对应客户端 `/2.0/ufile/files?` 请求），结束时移除规则，不改浏览器 Cookie。目录 ID 保持字符串；115 独立限流至少 2 秒，扫码有效期两分钟，状态长轮询超时继续等待但不突破总期限。不同配置页的旧连接 ID 不得覆盖新账号目标。所有测试与日志只用合成数据。首次或同账号扫码成功即保存会话以便目录失败后刷新，切换不同账号仍等目录成功后替换旧状态。网页目录返回 230012 时仅尝试一次所选客户端的应用目录接口，沿用同一 Cookie；仅列根目录第一层文件夹。鸿蒙扫码交换及 S1 类型已据用户响应核对，2026-09-07 已使用当前会话完成真实目录读取及分享转存验收；客户端分享列表使用 fid/fc/fn/fs。
 
@@ -142,6 +143,8 @@ zaynzhu-browser-extensions/
 - 右键转存提交队列与执行队列分开，提交不等待转存。入队即绑定账号目标，执行前重新核对。右键回调中须在任何异步等待之前调用 sidePanel.open({ windowId })，保持用户手势和跨标签窗口级显示；任务侧栏不向网页注入、不公开 web_accessible_resources、不申请 activeTab。仅接受本扩展侧栏页面读取任务，配置页仍独立打开且工具栏不设置 default_popup。配置页的打开侧栏消息同样立即处理，不排在下载队列之后。
 
 - 磁力是独立菜单，用户明确选择 115／光鸭／123，不按资源命中率换盘、不上传种子。入队与提交前绑定账号目录，API 显式传 wp_path_id／parentId／upload_dir，不更改默认目录。提交后释放队列，alarms 每分钟只读查状态；创建任务不等于完成，完成后须回读原目标。失败不重试写入；123 离线状态 1=失败、2=完成、3=服务端重试。切换账号或目录停止原任务查询，不移动已提交任务；原分享转存与配置功能须继续回归验证。光鸭磁力清单可省略首个零值 fileIndex，按 0 处理但拒绝重复编号。2026-09-09 已验证 115 同磁力既有任务停止、123 与光鸭完成后回读已选目录；115 新建任务仍待独立验收。第二条磁力在 123、光鸭完成。115 已按用户纠正取消提交前历史查重：校验账号目录后直接提交一次，由创建接口返回已存在或失败；不得再添加历史扫描或历史页数前置条件。提交后仅查询最近任务页定位本次哈希，不扫描历史，不移动旧任务。
+
+- 光鸭新增手机号验证码登录，只登录已有账号，不自动注册。本次直接登录取得的访问／刷新令牌存本机 TRUSTED_CONTEXTS，验证码与手机号不持久保存；官网备用连接仍不读取刷新令牌。SMS 间隔至少 60 秒，官方风控要求人机验证时停止。仅操作时续期，入队和连接状态读取不请求网络；续期保留账号、连接身份与目标，刷新拒绝则标记失效。所有短信测试必须模拟 fetch，不向真实手机号发送验证码。
 
 ## 开发约定
 
