@@ -98,6 +98,16 @@
       <button id="chooseBtn" type="button" class="primary" disabled>使用此文件夹</button>
     </section>
   </fieldset>
+  <section id="scanSection" hidden aria-label="扫描全部目录">
+    <label class="scan-toggle"><input id="scanToggle" type="checkbox"> 扫描全部文件夹目录</label>
+    <p class="hint">默认关闭。开启后扫描当前云盘，每页请求至少间隔 5 秒。目录越多耗时越长，仍可能触发风控；关闭开关可停止，不会自动重扫。</p>
+    <p id="scanStatus" role="status" aria-live="polite"></p>
+    <div id="scanResults" hidden>
+      <label for="scanFolder">选择完整路径</label>
+      <select id="scanFolder" size="8" aria-label="全部文件夹路径"></select>
+      <button id="scanChoose" type="button">使用选中的文件夹</button>
+    </div>
+  </section>
   <p id="status" role="status" aria-live="polite"></p>
   <footer>
     <span class="hint">已保存的目标</span>

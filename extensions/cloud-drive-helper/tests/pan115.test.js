@@ -118,6 +118,11 @@ test('115 全流程：等待、取消、持久恢复、多客户端隔离、换�
   await send('save-target', { path, connectionId: result.connectionId })
   await assert.rejects(send('list-folders', { parentId: '23', page: 0, connectionId: result.connectionId }), /根目录/ )
   await assert.rejects(send('save-target', { path: [{ id: '', name: '根目录' }], connectionId: result.connectionId }), /目标文件夹/)
+  await send('list-folders', { parentId: '23', page: 0, connectionId: result.connectionId, fullScan: true })
+  const deepPath = [...path, { id: '24', name: '合成子目录' }]
+  await assert.rejects(send('save-target', { path: deepPath, connectionId: result.connectionId }), /目标文件夹/)
+  assert.equal((await send('save-target', { path: deepPath, connectionId: result.connectionId, fullScan: true })).id, '24')
+  await send('save-target', { path, connectionId: result.connectionId })
   const originalConnection = result.connectionId
   handler = create115Handler(chromeApi, limiter)
   assert.equal((await send('get-state')).target.id, '23')

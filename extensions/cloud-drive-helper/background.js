@@ -1,3 +1,4 @@
+import { createDirectoryScan } from './directory-scan.js'
 import { createGuangyaAuth, ACCOUNT_KEY } from './guangya-auth.js'
 import { RateLimiter, readFolderPage, validateCredentials } from './guangya-api.js'
 import { readGuangyaWebSession } from './web-session.js'
@@ -136,6 +137,22 @@ async function handleMessage(message) {
 
 const handleCachedMessage = createCachedHandler(chrome.storage.local, handleMessage)
 
+const directoryScan = createDirectoryScan(handleCachedMessage, async message => {
+  const state = await handleCachedMessage({ ...message, type: 'get-state' })
+  if (!state.connected) throw new Error('请先连接云盘')
+  if (message.provider !== 'guangya') {
+    if (!state.connectionId || state.connectionId !== message.connectionId) throw new Error('连接已变化，请重新加载配置页')
+    return state.connectionId
+  }
+  if (message.mode === 'web') {
+    const { session } = await guangyaAuth.getState()
+    return session.connectionId || session.accessToken
+  }
+  const credentials = await getCredentials()
+  return JSON.stringify(credentials)
+})
+chrome.tabs?.onRemoved?.addListener(tabId => directoryScan.close(tabId))
+
 const transfers = createTransferService(chrome, handleCachedMessage, undefined, undefined, async renew => renew ? getWebSession() : (await guangyaAuth.getState()).session)
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -169,8 +186,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true
   }
   if (sender.id !== chrome.runtime.id || sender.url !== chrome.runtime.getURL('popup.html')) return
+  if (message.type === 'scan-stop') {
+    directoryScan.cancel(message.scanId, sender.tab?.id)
+    sendResponse({ ok: true })
+    return
+  }
   // 将连接、读目录和断开串行执行，避免切换账号时混入旧账号数据。
-  const pending = commands.then(async () => { await ready; return handleCachedMessage(message) })
+  const pending = commands.then(async () => { await ready; return ['scan-start', 'scan-step', 'scan-target'].includes(message.type)
+    ? directoryScan.execute(message, sender.tab?.id) : handleCachedMessage({ ...message, fullScan: false }) })
   commands = pending.catch(() => {})
   pending.then(data => sendResponse({ ok: true, data }))
     .catch(error => sendResponse({ ok: false, error: error.message, authExpired: Boolean(error.authExpired) }))

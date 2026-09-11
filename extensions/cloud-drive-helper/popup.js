@@ -24,6 +24,10 @@ let currentProvider = 'guangya'
 let connectionId = null
 let qrAttempt = null
 let qrTimer = null
+let scanId = null
+let scanGeneration = 0
+let scanTimer = null
+let wakeScan = null
 for (const [app, label] of Object.entries(CLIENT_TYPES)) {
   const option = document.createElement('option')
   option.value = app
@@ -54,6 +58,7 @@ async function run(action) {
   if (busy) return
   busy = true
   controls.disabled = true
+  document.getElementById('scanChoose').disabled = true
   setStatus('正在处理…')
   try {
     await action()
@@ -62,6 +67,7 @@ async function run(action) {
   } finally {
     busy = false
     controls.disabled = false
+    document.getElementById('scanChoose').disabled = false
   }
 }
 
@@ -71,6 +77,7 @@ function renderTarget(target) {
 
 function setConnected(connected) {
   browser.hidden = !connected
+  document.getElementById('scanSection').hidden = !connected
   chooseBtn.hidden = currentProvider !== 'guangya'
   disconnectBtn.hidden = !connected
   settings.open = !connected
@@ -153,6 +160,7 @@ connectForm.addEventListener('submit', event => {
 })
 
 disconnectBtn.addEventListener('click', () => run(async () => {
+  await stopScan()
   await cancelQr()
   await send({ type: 'disconnect' })
   connectionId = null
@@ -178,6 +186,7 @@ chooseBtn.addEventListener('click', () => run(async () => {
 }))
 
 async function loadState() {
+  await stopScan()
   chooseBtn.disabled = true
   setConnected(false)
   renderTarget(null)
@@ -405,3 +414,76 @@ document.getElementById('guangyaSmsForm').addEventListener('submit', event => {
     setStatus(data.directoryError ? `登录已保存，${data.directoryError}；可刷新目录` : '光鸭已登录，会话已保存在本机并支持续期', Boolean(data.directoryError))
   })
 })
+
+
+async function stopScan() {
+  scanGeneration++
+  clearTimeout(scanTimer)
+  wakeScan?.()
+  wakeScan = null
+  const id = scanId
+  scanId = null
+  document.getElementById('scanToggle').checked = false
+  document.getElementById('scanResults').hidden = true
+  document.getElementById('scanFolder').replaceChildren()
+  if (id) await send({ type: 'scan-stop', scanId: id })
+}
+
+document.getElementById('scanToggle').addEventListener('change', async event => {
+  if (!event.target.checked) {
+    try {
+      await stopScan()
+      document.getElementById('scanStatus').textContent = '已停止；已发出的请求结束后不再继续扫描'
+      setStatus('扫描已停止，已保存的目标保持不变')
+    }
+    catch (error) { setStatus(error.message, true) }
+    return
+  }
+  if (busy) { event.target.checked = false; return }
+  const generation = ++scanGeneration
+  await run(async () => {
+    const output = document.getElementById('scanStatus')
+    document.getElementById('scanResults').hidden = true
+    document.getElementById('scanFolder').replaceChildren()
+    output.textContent = '正在开始扫描…'
+    try {
+      const start = await send({ type: 'scan-start' })
+      if (generation !== scanGeneration) { await send({ type: 'scan-stop', scanId: start.id }); return }
+      scanId = start.id
+      while (generation === scanGeneration) {
+        const data = await send({ type: 'scan-step', scanId })
+        if (generation !== scanGeneration) return
+        output.textContent = `${data.done ? '扫描完成' : '扫描中'}：${data.count} 个文件夹，已读取 ${data.requests} 页`
+        if (data.done) {
+          const select = document.getElementById('scanFolder')
+          data.folders.forEach((path, index) => {
+            const option = document.createElement('option')
+            option.value = String(index)
+            option.textContent = path.map(entry => entry.name).join(' / ')
+            select.append(option)
+          })
+          document.getElementById('scanResults').hidden = !data.folders.length
+          document.getElementById('scanChoose').disabled = !data.folders.length
+          if (data.folders.length) select.selectedIndex = 0
+          setStatus('全目录扫描完成；结果仅保留在本次配置页，不会自动重新扫描')
+          return
+        }
+        await new Promise(resolve => { wakeScan = resolve; scanTimer = setTimeout(resolve, data.waiting || 5000) })
+        wakeScan = null
+      }
+    } catch (error) {
+      if (generation === scanGeneration) {
+        await stopScan()
+        output.textContent = `扫描停止：${error.message}；未自动重试`
+        throw error
+      }
+    }
+  })
+})
+
+document.getElementById('scanChoose').addEventListener('click', () => run(async () => {
+  const target = await send({ type: 'scan-target', scanId, index: Number(document.getElementById('scanFolder').value) })
+  renderTarget(target)
+  setStatus('目标文件夹已保存')
+}))
+window.addEventListener('pagehide', () => { stopScan().catch(() => {}) })

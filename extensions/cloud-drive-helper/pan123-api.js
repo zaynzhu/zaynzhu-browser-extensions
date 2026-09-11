@@ -72,18 +72,19 @@ export async function login123(credentials) {
   return normalize123Session(data?.token)
 }
 
-export async function read123Folders(session, page = 0) {
+export async function read123Folders(session, page = 0, parentId = '') {
   if (!Number.isSafeInteger(page) || page < 0) throw new Error('123 分页参数无效')
+  if (typeof parentId !== 'string' || (parentId && !/^\d+$/.test(parentId))) throw new Error('123 目录参数无效')
   normalize123Session(session?.token)
   const data = await request123('file/list/new', {
     token: session.token,
-    params: { driveId: 0, limit: PAGE_SIZE, next: 0, orderBy: 'file_id', orderDirection: 'desc', parentFileId: 0, trashed: false, SearchData: '', Page: page + 1, OnlyLookAbnormalFile: 0, event: 'homeListFile', operateType: 4, inDirectSpace: false },
+    params: { driveId: 0, limit: PAGE_SIZE, next: 0, orderBy: 'file_id', orderDirection: 'desc', parentFileId: parentId || '0', trashed: false, SearchData: '', Page: page + 1, OnlyLookAbnormalFile: 0, event: 'homeListFile', operateType: 4, inDirectSpace: false },
   })
   if (!Array.isArray(data?.InfoList) || !Number.isSafeInteger(data.Total) || data.Total < 0) throw new Error('123 目录格式异常')
   const folders = []
   for (const entry of data.InfoList) {
     if (entry?.Type === 0) continue
-    if (entry?.Type !== 1 || safeId(entry.ParentFileId) !== '0' || typeof entry.FileName !== 'string' || !entry.FileName) throw new Error('123 目录格式异常')
+    if (entry?.Type !== 1 || safeId(entry.ParentFileId) !== (parentId || '0') || typeof entry.FileName !== 'string' || !entry.FileName) throw new Error('123 目录格式异常')
     folders.push({ id: safeId(entry.FileId), name: entry.FileName })
   }
   return { folders, total: data.Total, page, pageSize: PAGE_SIZE }

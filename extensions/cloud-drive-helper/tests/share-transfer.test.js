@@ -7,7 +7,9 @@ const target = { id: '42', path: [{ id: '', name: '根目录' }, { id: '42', nam
 const token = `e30.${Buffer.from(JSON.stringify({ id: '123', exp: 4102444800 })).toString('base64url')}.synthetic`
 const base = provider => ({ share: { provider, shareId: 'synthetic', code: '' }, target, session: { token, accessToken: 'synthetic', expiresAt: 4102444800000, app: 'harmony' }, limiter: { run: action => action() }, beforeWrite: async () => {}, progress: async () => {}, with115Cookie: async (url, action) => action() })
 
-for (const provider of ['guangya', '123', '115']) test(`${provider} 仅写入选定目录，任务及目录核验完成才返回成功`, async t => {
+for (const nested of [false, true]) for (const provider of ['guangya', '123', '115']) test(`${provider} ${nested ? '子目录' : '第一层'}仅写入选定目录，任务及目录核验完成才返回成功`, async t => {
+  const parentId = nested ? '7' : ''
+  const chosen = nested ? { ...target, path: [target.path[0], { id: '7', name: '合成父目录' }, target.path[1]] } : target
   let submitted = false
   let writes = 0
   let polled = 0
@@ -30,22 +32,22 @@ for (const provider of ['guangya', '123', '115']) test(`${provider} 仅写入选
       return Response.json({ code: 0, data: { status: polled === 1 ? 1 : 2 } })
     }
     if (provider === 'guangya') {
-      if (url.pathname.endsWith('/get_file_list') && payload.parentId === '') data = { list: [{ fileId: '42', resType: 2, fileName: '合成目标' }], total: 1 }
+      if (url.pathname.endsWith('/get_file_list') && payload.parentId === parentId) data = { list: [{ fileId: '42', resType: 2, fileName: '合成目标' }], total: 1 }
       else if (url.pathname.endsWith('/get_share_access_token')) data = { accessToken: 'synthetic-share' }
       else { const list = url.pathname.includes('share_page') || submitted ? [file] : []; data = { list, total: list.length } }
       return Response.json({ code: 0, data })
     }
     if (provider === '123') {
       let list
-      if (payload.parentFileId === '0') list = [{ FileId: 42, FileName: '合成目标', Type: 1 }]
+      if (payload.parentFileId === (parentId || '0')) list = [{ FileId: 42, FileName: '合成目标', Type: 1 }]
       else list = url.pathname.endsWith('/share/get') || submitted ? [file] : []
       return Response.json({ code: 0, data: { InfoList: list, ...(url.pathname.endsWith('/share/get') ? { Next: '-1' } : { Total: list.length }) } })
     }
     if (url.pathname.endsWith('/share/snap')) return Response.json({ state: true, data: { list: [file], count: 1 } })
-    const list = payload.cid === '0' ? [{ fc: '0', fid: '42', fn: '合成目标' }] : submitted ? [{ fc: '1', fid: '901', fn: '合成文件', fs: '10' }] : []
+    const list = payload.cid === (parentId || '0') ? [{ fc: '0', fid: '42', fn: '合成目标' }] : submitted ? [{ fc: '1', fid: '901', fn: '合成文件', fs: '10' }] : []
     return Response.json({ state: true, data: list, count: list.length })
   })
-  const result = await executeShareTransfer({ ...base(provider), beforeWrite: async () => { marked = true } })
+  const result = await executeShareTransfer({ ...base(provider), target: chosen, beforeWrite: async () => { marked = true } })
   assert.equal(result.count, 1)
   assert.equal(writes, 1)
   if (provider !== '115') assert.equal(polled, 2)

@@ -43,15 +43,15 @@ export function create123Handler(chromeApi, limiter = new RateLimiter(chromeApi.
     }
     if (!connected) throw new Error('123 登录已过期，请重新登录')
     if (message.type === 'list-folders') {
-      if (message.parentId !== '') throw new Error('123 当前仅列出根目录第一层文件夹')
-      return limiter.run(() => read123Folders(session, message.page))
+      if (message.parentId !== '' && !message.fullScan) throw new Error('123 当前仅列出根目录第一层文件夹')
+      return limiter.run(() => read123Folders(session, message.page, message.parentId))
     }
     if (message.type === 'save-target') {
       const path = message.path
-      if (!Array.isArray(path) || path.length !== 2 || path[0]?.id !== ''
+      if (!Array.isArray(path) || (message.fullScan ? path.length < 2 || path.length > 100 : path.length !== 2) || path[0]?.id !== ''
         || path.some((entry, index) => !entry || typeof entry.id !== 'string' || (index && !/^\d+$/.test(entry.id))
           || typeof entry.name !== 'string' || !entry.name)) throw new Error('123 目标文件夹无效，请重新选择')
-      const target = { id: path[1].id, path: path.map(({ id, name }) => ({ id, name })) }
+      const target = { id: path.at(-1).id, path: path.map(({ id, name }) => ({ id, name })) }
       await local.set({ [TARGET_KEY]: { accountId: session.accountId, target } })
       return target
     }

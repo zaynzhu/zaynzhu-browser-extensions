@@ -108,7 +108,7 @@ export async function executeShareTransfer({ share, target, session, limiter, wi
     }
     const files = parentId => collect(async page => pageEntries(await request('file/list/new', { params: { driveId: 0, parentFileId: parentId, Page: page + 1, limit: 100, next: 0, trashed: false, orderBy: 'file_id', orderDirection: 'desc' } })))
     verifyTarget = async () => {
-      if (!/^\d+$/.test(target.id) || !(await files('0')).some(item => item.folder && item.id === target.id && item.name === target.path.at(-1).name)) throw fail('123 目标目录无法核实，未执行转存')
+      if (!/^\d+$/.test(target.id) || !(await files(target.path.at(-2)?.id || '0')).some(item => item.folder && item.id === target.id && item.name === target.path.at(-1).name)) throw fail('123 目标目录无法核实，未执行转存')
     }
     readTarget = () => files(target.id)
     readSource = () => collect(async page => pageEntries(await request('share/get', { params: { shareKey: share.shareId, SharePwd: share.code, ParentFileId: 0, Page: page + 1, limit: 100, next: 0, orderBy: 'file_name', orderDirection: 'asc' } })))
@@ -148,7 +148,7 @@ export async function executeShareTransfer({ share, target, session, limiter, wi
       return { items: entries(body.data, app !== 'web'), total: Number(body.count) }
     })
     verifyTarget = async () => {
-      if (!/^\d+$/.test(target.id) || !(await files('0')).some(item => item.folder && item.id === target.id && item.name === target.path.at(-1).name)) throw fail('115 目标目录无法核实，未执行转存')
+      if (!/^\d+$/.test(target.id) || !(await files(target.path.at(-2)?.id || '0')).some(item => item.folder && item.id === target.id && item.name === target.path.at(-1).name)) throw fail('115 目标目录无法核实，未执行转存')
     }
     readTarget = () => files(target.id)
     const shareFiles = parentId => collect(async page => {

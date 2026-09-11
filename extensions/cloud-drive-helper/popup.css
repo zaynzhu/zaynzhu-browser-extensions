@@ -51,3 +51,9 @@ select { width: 100%; padding: 10px; border: 1px solid #cfd2d7; border-radius: 5
 #qrPanel { text-align: center; margin-top: 16px; }
 #qrImage { display: block; max-width: 100%; height: auto; margin: 0 auto; background: #fff; }
 #qrStatus { min-height: 24px; }
+
+#scanSection { margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 12px; }
+.scan-toggle { display: flex; align-items: center; gap: 8px; }
+.scan-toggle input { width: auto; }
+#scanFolder { width: 100%; margin: 8px 0; }
+#scanStatus { font-size: 13px; }

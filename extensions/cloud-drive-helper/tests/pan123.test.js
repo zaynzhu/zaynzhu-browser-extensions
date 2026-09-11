@@ -99,3 +99,18 @@ test('123 首次目录失败保留令牌供刷新，换账号失败保留旧连�
   assert.deepEqual(local.values.guangyaCredentials, { synthetic: true })
   assert.deepEqual(local.values.pan115Sessions, { web: { synthetic: true } })
 })
+
+test('123 全目录扫描使用指定父 ID，允许完整目标路径，关闭时仍限制第一层', async t => {
+  const session = { ...normalize123Session(token()), connectionId: 'synthetic' }
+  const local = storage({ pan123Session: session })
+  const handle = create123Handler({ storage: { local, session: storage() } }, { run: action => action() })
+  t.mock.method(globalThis, 'fetch', async url => {
+    assert.equal(new URL(url).searchParams.get('parentFileId'), '42')
+    return Response.json({ code: 0, data: { InfoList: [{ Type: 1, FileId: '43', ParentFileId: '42', FileName: '合成子目录' }], Total: 1 } })
+  })
+  const base = { connectionId: 'synthetic', fullScan: true }
+  assert.equal((await handle({ ...base, type: 'list-folders', parentId: '42', page: 0 })).folders[0].id, '43')
+  const path = [{ id: '', name: '根目录' }, { id: '42', name: '合成父目录' }, { id: '43', name: '合成子目录' }]
+  await assert.rejects(handle({ ...base, fullScan: false, type: 'save-target', path }))
+  assert.equal((await handle({ ...base, type: 'save-target', path })).id, '43')
+})

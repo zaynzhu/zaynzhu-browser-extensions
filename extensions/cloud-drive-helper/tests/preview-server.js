@@ -48,7 +48,9 @@ function installMockChrome() {
         state.connected = true
         state.connectionId = crypto.randomUUID()
         data = { root: list(), target, connectionId: state.connectionId }
-      } else if (message.type === 'list-folders') data = list(message.parentId, message.page)
+      } else if (message.type === 'list-folders') data = message.fullScan
+        ? { folders: message.parentId === '' ? [{ id: '11', name: '合成父目录' }] : message.parentId === '11' ? [{ id: '22', name: '合成子目录' }] : [], total: message.parentId === '22' ? 0 : 1, page: 0, pageSize: 50 }
+        : list(message.parentId, message.page)
       else if (message.type === 'save-target') {
         target = { id: message.path.at(-1).id, path: message.path }
         state.target = target
@@ -67,7 +69,7 @@ function installMockChrome() {
   } } }
 }
 
-const allowed = new Map([['/popup.html', 'text/html'], ['/popup.js', 'text/javascript'], ['/popup.css', 'text/css'], ['/pan115-api.js', 'text/javascript'], ['/directory-cache.js', 'text/javascript'], ['/transfer-panel.html', 'text/html'], ['/transfer-panel.js', 'text/javascript'], ['/transfer-panel.css', 'text/css']])
+const allowed = new Map([['/popup.html', 'text/html'], ['/popup.js', 'text/javascript'], ['/popup.css', 'text/css'], ['/pan115-api.js', 'text/javascript'], ['/directory-cache.js', 'text/javascript'], ['/directory-scan.js', 'text/javascript'], ['/transfer-panel.html', 'text/html'], ['/transfer-panel.js', 'text/javascript'], ['/transfer-panel.css', 'text/css']])
 const server = createServer(async (request, response) => {
   const path = new URL(request.url, 'http://127.0.0.1').pathname
   response.setHeader('Cache-Control', 'no-store')
@@ -119,7 +121,8 @@ const server = createServer(async (request, response) => {
   }
   if (path === '/preview-mock.js') {
     response.setHeader('Content-Type', 'text/javascript')
-    response.end(`import { createCachedHandler } from './directory-cache.js'
+    response.end(`import { createDirectoryScan } from './directory-scan.js'
+import { createCachedHandler } from './directory-cache.js'
 (${installMockChrome.toString()})()
 const values = {}
 const local = { async get(key) { return { [key]: values[key] } }, async set(data) { Object.assign(values, data) }, async remove(key) { delete values[key] } }
@@ -129,8 +132,10 @@ const cached = createCachedHandler(local, async message => {
   if (!response.ok) throw new Error(response.error)
   return response.data
 })
+const scanner = createDirectoryScan(cached, async message => (await cached({ ...message, type: 'get-state' })).connectionId)
 chrome.runtime.sendMessage = async message => {
-  try { return { ok: true, data: await cached(message) } }
+  if (message.type === 'scan-stop') { scanner.cancel(message.scanId, 1); return { ok: true } }
+  try { return { ok: true, data: await (message.type.startsWith('scan-') ? scanner.execute(message, 1) : cached(message)) } }
   catch (error) { return { ok: false, error: error.message, authExpired: error.authExpired } }
 }`)
     return
