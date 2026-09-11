@@ -127,6 +127,8 @@ git clone https://github.com/zaynzhu/zaynzhu-browser-extensions.git
 
 会话仅保存在本机，账号与目标隔离。失败不自动重试写入，处理中避免重新加载扩展或关闭浏览器。
 
+大目录扫描可能耗时较长，目前 115、123 的真实全量扫描尚未完成验收；按需逐层选择列为后续完善项。
+
 详细连接说明、权限与存储边界、排障、验收记录和测试命令见[云盘助手使用与维护](docs/cloud-drive-helper.md)。
 
 ---

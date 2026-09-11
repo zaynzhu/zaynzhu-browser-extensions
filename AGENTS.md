@@ -101,26 +101,16 @@ zaynzhu-browser-extensions/
 │       ├── search-url.js
 │       ├── popup.html/js/css
 │       └── icons/
-│   └── cloud-drive-helper/     # 云盘助手（三云盘连接、分享转存与磁力下载）
-│       ├── manifest.json
-│       ├── background.js
-│       ├── directory-cache.js   # 隔离的根目录缓存
-│       ├── transfer-panel.html/js/css # 原生任务侧栏
-│       ├── guangya-api.js       # 开发者签名 / 网页 Bearer、目录列表、跨后台休眠限流
-│       ├── guangya-auth.js     # 手机验证码登录与本机持久会话续期
-│       ├── web-session.js       # 按需读取指定光鸭官网登录项
-│       ├── pan115-api.js        # 分客户端二维码 / 会话交换 / 只读目录接口
-│       ├── pan115-background.js # 持久会话、类型和账号隔离、受限请求头规则
-│       ├── pan123-api.js        # 账号密码登录、签名、只读根目录分页
-│       ├── pan123-background.js # 本机令牌、账号隔离与目标保存
-│       ├── magnet-link.js       # 单条 BTIH 磁力解析，不处理种子
-│       ├── magnet-api.js        # 指定目录离线提交、状态与完成核验
-│       ├── share-link.js        # 官方分享地址与提取码解析
-│       ├── share-transfer.js    # 三云盘转存、任务状态与目录回读核验
-│       ├── transfer-background.js # 账号目标绑定、临时会话规则和结果状态
-│       ├── transfer.html/js     # 独立转存结果页
-│       ├── popup.html/js/css
-│       └── tests/               # 合成测试与界面预览
+│   └── cloud-drive-helper/     # 三云盘连接、分享转存与磁力下载
+│       ├── manifest.json / background.js
+│       ├── guangya-api.js / guangya-auth.js / web-session.js
+│       ├── pan115-api.js / pan115-background.js
+│       ├── pan123-api.js / pan123-background.js
+│       ├── directory-cache.js / directory-scan.js
+│       ├── share-link.js / share-transfer.js / transfer-background.js
+│       ├── magnet-link.js / magnet-api.js
+│       ├── popup.html/js/css / transfer-panel.html/js/css / transfer.html/js
+│       └── tests/               # 仅合成数据
 ├── AGENTS.md
 ├── README.md
 └── .gitignore
